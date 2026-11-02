@@ -1,3 +1,5 @@
+> **Superseded.** This is the first specification (v1) of the Piotroski F-score test, kept for the record and unchanged apart from this note. The headline is now spec_v2: see `output/writeup.md`. 
+
 # Checkpoint 3 results: Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)
 
 ## Checks

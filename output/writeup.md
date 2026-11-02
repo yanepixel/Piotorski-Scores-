@@ -1,20 +1,23 @@
-# Piotroski F-score test: write-up
+# Piotroski F-score test: write-up (headline specification: spec_v2)
 
 **Universe:** Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)
 
 **Test period:** June 2005 to December 2025. The test ends before 2026, and the last portfolio is partial (7 of its 12 months).
 
-This repository holds the code, the write-up and summary tables only. Licensed WRDS data is not included, and neither are the detailed files derived from it. Files named in the text but not present here, such as logs and monthly or company-level tables, are produced when you run the scripts with your own WRDS access. A few company-level cells were removed from the published summaries, so a rerun will show more than this copy does.
+This repository holds the code, the write-up and summary tables only. Licensed WRDS data is not included, and neither are the detailed files derived from it. Files named in the text but not present here, such as logs and monthly or company-level tables, are produced when you run the scripts with your own WRDS access. A few company-level cells were removed from the published summaries, so a rerun will show more than this copy does. The spec_v2 stock-level files (monthly portfolio returns, exits, turnover, formation lists, scores and the per-company reasons behind the drop counts) are likewise not included; the scripts `12a` to `17` produce them. Audit reports and the scripts that produced them, named in the text, are not all here. Do not commit reruns from a copy of this repository, because a rerun restores detail files and values left out here.
+
+**Status of this document.** spec_v2 is the headline. It re-specifies the first version (v1) after an external review; v1 is kept unchanged as the superseded first specification in `output/archive_v1/` and is compared with v2 below. The three later runs (2026 extension, REIT liquidity substitute, 100/100 long/short) were run on the v1 specification and have not been rerun under v2.
 
 ## The answer
 
-No. Buying the financially strongest companies in this universe, those with an F-score of 8 or 9, did not beat an equal-weighted portfolio of all the scored companies. High grew 10.91% a year after costs, against 11.35% for that benchmark, with similar risk, and it beat the benchmark in 10 of 20 complete years. After accounting for market, size, value, profitability, investment and momentum factors, High's alpha was -0.8% a year (t-stat -0.71), which is not distinguishable from zero. A small edge in either direction can't be ruled out: the 95% ranges are about -2.0% to +1.4% a year for excess return and -2.9% to +1.4% for alpha. High did better than the benchmark in the first decade and worse in the second, neither significantly on raw return (+1.02% a year, t 1.04; -1.53%, t -1.22), although the factor-adjusted gap in the second decade was -2.63% (t -2.30, about -2 after allowing for how often this test overstates; see Results). None of the 9 robustness variants produced a significant positive alpha over the full period. This tests large US companies, not the cheap, smaller companies Piotroski studied, so it does not test his original claim.
+No. Buying the financially strongest companies in this universe, those with an F-score of 8 or 9, did not beat the market of the same stocks. Measured against an equal-weighted portfolio of every included company, High earned +0.08% a year more after costs (t-stat +0.10, p 0.92). After accounting for market, size, value and momentum, its alpha was -0.15% a year (t -0.13). Neither is distinguishable from zero, and this test could not have seen a small edge: at 80% power the smallest excess return it could reliably detect is 2.13% a year, and the 95% range for the excess is -1.42% to +1.57%, so a true edge of up to about +1.6% a year cannot be ruled out. The benchmark choice matters to the sign: against scored companies only, High's excess is -0.42% a year (t -0.56), because the unscored companies (mostly REITs and real estate) lagged. High beat the all-included benchmark in 9 of 20 complete years. In the second half, June 2015 to December 2025, High's four-factor alpha was -3.38% a year (t -2.70); it is the only one of the six pre-specified tests that survives the multiple-testing adjustment (adjusted p 0.047), narrowly, and not under every way of computing the standard error (see Results). With the opposite sign in 2005-15, that is weak evidence of a later-period shortfall, not a finding of failure. This tests large US companies, not the cheap, smaller companies Piotroski studied, so it does not test his original claim.
 
 ## Terms
 
 - **F-score:** a 0-9 count of financial-health tests a company passes, from its latest annual report.
 - **High, Middle, Low:** portfolios of scores 8-9, 5-7 and 0-4.
-- **Benchmark:** every scored company in the universe, equally weighted, run the same way and charged the same costs.
+- **All-included benchmark (primary):** every company on the list, scored or not, equally weighted, run the same way and charged the same costs.
+- **Scored-only benchmark:** the scored companies only. This is the v1 benchmark; both are shown together throughout.
 - **Net / gross:** after / before trading costs.
 - **CAGR:** the constant yearly growth rate that gives the same end value.
 - **Volatility:** how much monthly returns swing, stated per year.
@@ -22,135 +25,182 @@ No. Buying the financially strongest companies in this universe, those with an F
 - **Max drawdown:** the largest peak-to-trough fall.
 - **Turnover:** the share of a portfolio traded at a rebalance. Two-way counts buys and sells.
 - **Excess return:** return above the benchmark, here the average monthly gap times 12.
-- **Tracking error:** how much the return gap to the benchmark swings, stated per year.
-- **Information ratio:** excess return divided by tracking error.
+- **Tracking error / information ratio:** how much the gap swings per year; excess return divided by that.
+- **Factor:** a broad return pattern: market (Mkt-RF), size (SMB), value (HML), momentum (MOM); profitability (RMW) and investment (CMA) enter only the secondary six-factor version.
+- **Alpha:** return left after accounting for those factors, stated per year.
+- **t-stat / p-value:** how many standard errors a number is from zero; the chance of a result at least this far from zero if the true value were zero.
+- **Newey-West (HAC):** standard errors adjusted for returns that are correlated over time. The number of months allowed (the lag) is set by a formula, 4 here.
+- **Holm adjustment:** a correction for looking at several tests at once; it raises p-values so that the chance of any false positive in the family stays at 5%.
+- **Power / minimum detectable effect:** the smallest true effect the test would detect 80% of the time at the 5% level.
 - **REIT:** real estate investment trust, a company that mainly owns property or property loans and passes most income to shareholders.
 - **GICS:** the Global Industry Classification Standard, the sector system used here.
-- **Rank correlation:** how closely two orderings agree, from -1 (opposite) to +1 (identical).
-- **Factor:** a broad return pattern: market, size (SMB), value (HML), profitability (RMW), investment (CMA) and momentum (MOM).
-- **Alpha:** return left after accounting for those factors, stated per year.
-- **t-stat:** how many standard errors a number is from zero. Beyond 2 in either direction is treated as significant here.
-- **Newey-West:** standard errors adjusted for returns that are correlated over time, here over 12 months.
-- **Spread:** High minus Low. A diagnostic only, with no shorting costs.
-- **Availability date:** the first date a number could be used: the 10-K filing date, or the fiscal year-end plus 120 days if there is none.
-- **PERMCO / PERMNO / GVKEY:** the CRSP company ID, CRSP security ID and Compustat company ID.
+- **Availability date:** the first date a number could be used: the 10-K filing date plus 3 calendar days. A firm-year with no real filing date is not scored.
 - **Stub year:** a fiscal year with an unusual length, usually from changing the year-end.
+- **Spread:** High minus Low, a diagnostic only, with no shorting costs.
 
 ## Method
 
-All rules are in `config.py`, and the decisions are recorded in `CLAUDE.md`.
+All rules are in `config.py` (`SPEC_V2`) and the decisions in `CLAUDE.md` section 8f, which were committed before any v2 return was read; the exact sequence is under Timing of the specification. The universe, formation dates, buckets and holding period are unchanged from v1.
 
 - **Universe:** on the last trading day of each May, 2005-2025, the top 500 US-incorporated common stocks on NYSE, Nasdaq or NYSE American by market cap, rebuilt from data on that date. Financials and utilities are removed after ranking.
-- **Scores:** the nine Piotroski tests from Compustat annual data, for fiscal years 2004-2024. The rules are in `CLAUDE.md`. Three readings differ from Piotroski's paper as recalled by the audit, not checked against its text: net income rather than income before extraordinary items, a share rise of up to 2% still passes the no-issuance test, and a company with no long-term debt in both years passes the leverage test. In a later check, a sensitivity seen after results that changed no rule, removing the 2% tolerance gave a High alpha of -0.08% (t -0.08), a 5% tolerance -1.24% (t -1.30), and failing the no-debt case -1.09% (t -0.97). None is significant. In 2015-25, all three stay beyond |t| of 2 (-3.18%, t -3.40; -3.71%, t -4.55; -4.17%, t -4.23). The net income reading was not tested, because income before extraordinary items is not in the project's data. Each portfolio uses the latest score available by the formation date, no more than 18 calendar months past its fiscal year-end.
+- **Scores:** the nine Piotroski tests from Compustat annual data, fiscal years 2004-2024, with five changes from v1: (1) profitability and accruals use income before extraordinary items (`ib`), as in the paper, not net income; (2) the no-issuance test is passed when common stock issued less common stock repurchased (`sstk - prstkc`) is zero or negative, with a missing value counting as zero and negative values used as reported, instead of v1's share-count test with a 2% tolerance; (3) a no-debt company passes the leverage test only where the prior-year change is computable; (4) a firm-year with no real 10-K filing date is not scored, with no year-end-plus-120-days fallback; (5) a filing counts only if its date plus 3 calendar days is on or before the formation date (an assumption). If the newest year fails the date test, the latest earlier scored year is used if no more than 18 calendar months old. Leverage uses long-term debt only, as in v1. Any uncomputable signal still drops the company-year.
 - **Portfolios:** equal weight at formation, held 12 months from June. Returns include delisting returns, and a delisted stock's value goes pro rata to the rest.
-- **Costs:** 10 basis points (0.10%) on each dollar bought or sold at each rebalance. The first portfolio is charged as bought from cash. High's costs were about 0.16% a year.
-- **Secondary benchmarks:** RSP and SPY fund returns.
+- **Costs:** 10 basis points (0.10%) on each dollar bought or sold at each rebalance, and also on the value reinvested after a mid-period exit, charged one side in the exit month (v1 did not charge this). High's costs averaged 0.17% a year, of which 0.002% is reinvestment.
+- **Benchmarks:** primary = all included names, scored or not, held with their actual returns and charged like the buckets; the scored-only benchmark is reported beside it. RSP and SPY are fund returns. Two included names with no return for some months and no exit (Maxim Integrated, November 2007 to May 2008; General Growth Properties, May 2009) are held flat at 0%, uncharged, in the all-included benchmark only; any other missing return would have stopped the run.
+- **Tests:** two primary tests of High, set in `SPEC_V2`: (1) its raw annualised excess return over the all-included benchmark; (2) its alpha on market, size, value and momentum. Standard errors are Newey-West with the automatic lag floor(4 x (T/100)^(2/9)), which is 4 for the full period and for each subperiod (T = 247 months in total), with p-values from a t distribution with T - k degrees of freedom. Holm adjustment is over one family of six p-values: the two tests times the full period and the two subperiods. The six-factor alpha is secondary because the profitability factor overlaps the screen. Power is reported at 80% and 5% two-sided.
 
 ## Results
 
-All figures are net of costs. June 2005 to December 2025, 247 months.
+All figures are net of costs. June 2005 to December 2025, 247 months. Both benchmarks are shown together; v1 is the first specification.
 
-| Portfolio | CAGR | Volatility | Sharpe | Max drawdown | Average two-way turnover |
-|---|---|---|---|---|---|
-| High (8-9) | 10.91% | 16.79% | 0.60 | -44.4% | 164% |
-| Middle (5-7) | 11.26% | 15.85% | 0.65 | -49.8% | 81% |
-| Low (0-4) | 10.93% | 19.85% | 0.54 | -61.0% | 176% |
-| Benchmark | 11.35% | 16.17% | 0.65 | -49.1% | 34% |
-| RSP | 9.85% | 17.00% | 0.54 | -55.6% | n/a |
-| SPY | 10.88% | 14.90% | 0.66 | -50.8% | n/a |
+| Portfolio | CAGR | Volatility | Sharpe | Max drawdown | Average two-way turnover | v1 CAGR | v1 Sharpe |
+|---|---|---|---|---|---|---|---|
+| High (8-9) | 10.75% | 16.96% | 0.59 | -45.7% | 166% | 10.91% | 0.60 |
+| Middle (5-7) | 11.41% | 15.88% | 0.66 | -49.1% | 80% | 11.26% | 0.65 |
+| Low (0-4) | 10.19% | 18.89% | 0.52 | -56.9% | 174% | 10.93% | 0.54 |
+| All-included benchmark | 10.79% | 16.26% | 0.61 | -50.6% | 33% | n/a | n/a |
+| Scored-only benchmark | 11.36% | 16.17% | 0.65 | -49.2% | 34% | 11.35% | 0.65 |
+| RSP | 9.85% | 17.00% | 0.54 | -55.6% | n/a | 9.85% | 0.54 |
+| SPY | 10.88% | 14.90% | 0.66 | -50.8% | n/a | 10.88% | 0.66 |
 
-| High against the Benchmark | Value |
-|---|---|
-| Excess return | -0.29% a year (t -0.34) |
-| Tracking error | 3.69% |
-| Information ratio | -0.08 |
-| Complete years High won | 10 of 20 |
-| 2025 partial (7 of 12 months) | High 11.20%, Benchmark 10.37% |
+v1's 'Benchmark' is the scored-only benchmark, so it sits beside that row. v1 does not charge the reinvestment of mid-period exits.
 
-| Factor regression, net | Alpha a year | t-stat | Market | SMB | HML | RMW | CMA | MOM |
-|---|---|---|---|---|---|---|---|---|
-| High minus risk-free rate | -0.78% | -0.71 | 1.02 | 0.18 | -0.05 | 0.19 | 0.04 | 0.00 |
-| Spread | -2.0% | -0.72 | -0.02 | -0.14 | 0.07 | 0.47 | 0.04 | 0.07 |
-
-| Subperiod, net | High CAGR | Benchmark CAGR | High excess | High alpha (t) | Spread alpha (t) |
-|---|---|---|---|---|---|
-| June 2005 to May 2015 | 12.3% | 11.2% | +1.0% | +2.5% (1.76) | +2.1% (0.51) |
-| June 2015 to December 2025 | 9.6% | 11.5% | -1.5% | -3.8% (-4.10) | -5.7% (-1.49) |
-
-The 2015-25 figure needs its context:
-
-> High's alpha for June 2015 to December 2025 was -3.8% a year, t -4.10 with the pre-set 12 lags (-2.47 without adjustment; -3.06 with 4 lags). In simulations, 12 lags on 127 months overstate significance somewhat, implying a t nearer -3.4 to -4.0. Randomly chosen portfolios from the same universe also averaged -1.3%, and 19% of them reached |t| of 2 or more. The alpha falls in the lowest 1.5% of random selections, but the lowest 11% if the random selections keep High's sector mix. The full-period alpha is -0.8%, t -0.71, and 2005-15 has the opposite sign.
-
-Taken together, a t of about -2.5 to -3.6 is defensible, not -4.10 alone.
-
-The gap between High and the Benchmark in 2015-25 was -1.53% a year on raw return (t -1.22) and -2.63% (t -2.30) after the factors. In simulations that t is about -2 (p 0.04 to 0.07), and the gap falls in the lowest 11% of random selections that keep High's sector mix.
-
-**By individual score:** returns do not rise with the score. Scores 4-9 averaged 11.75% to 13.63% a year, gross, over complete years. The rank correlation of score with average return is -0.32 across all 10 scores, but scores 0-3 average under 10 names and score 0 is one name in one year. It is +0.14 across the 6 scores with enough names. Neither figure is a test of significance.
-
-The year-by-year table is in `output/tables/year_by_year.csv`.
-
-![Growth of $1](charts/cumulative_returns.png)
-
-![Drawdowns](charts/drawdowns.png)
-
-![Average annual return by F-score](charts/returns_by_score.png)
-
-## Robustness
-
-Each row changes one setting. The headline stays the headline whatever these show, and every variant run is reported. The variant definitions were set after headline returns existed; the timing of two later rules is under Robustness timing below. All are net of costs.
-
-| Variant | High alpha | t-stat | High minus Benchmark | High Sharpe | Benchmark Sharpe | Benchmark CAGR |
+| Portfolio | Excess vs all-included | t | Tracking error | Information ratio | Excess vs scored-only | t |
 |---|---|---|---|---|---|---|
-| **Headline** | -0.78% | -0.71 | -0.29% | 0.60 | 0.65 | 11.35% |
-| High cutoff 7+ | -0.22% | -0.30 | +0.09% | 0.65 | 0.65 | 11.35% |
-| Version B: cheapest third | -1.11% | -0.59 | -0.00% | 0.50 | 0.55 | 10.35% |
-| Cap-weighted | -0.78% | -0.54 | -0.99% | 0.63 | 0.78 | 12.64% |
-| Sector-neutral | -0.48% | -0.55 | -0.18% | 0.61 | 0.65 | 11.35% |
-| Fallback lag 90 days | -0.78% | -0.71 | -0.29% | 0.60 | 0.65 | 11.35% |
-| Costs 25 bps | -1.02% | -0.94 | -0.48% | 0.59 | 0.64 | 11.28% |
-| Eight-signal | -0.97% | -0.90 | -0.11% | 0.59 | 0.62 | 10.91% |
-| Universe buffer | -0.72% | -0.64 | -0.33% | 0.61 | 0.65 | 11.40% |
-| Profitability screen | -0.78% | -0.70 | -0.03% | 0.61 | 0.65 | 11.12% |
+| High | +0.08% | +0.10 | 4.13% | +0.02 | -0.42% | -0.56 |
+| Middle | +0.50% | +1.52 | 1.47% | +0.34 | +0.01% | +0.02 |
+| Low | -0.09% | -0.05 | 7.68% | -0.01 | -0.59% | -0.31 |
 
-| Variant | High, median names (minimum) | Low, median names (minimum) | Benchmark, median names | Dates under 10 names |
+
+High won 9 of 20 complete years against the all-included benchmark and 10 of 20 against the scored-only one. The partial 2025 year (7 of 12 months): High 11.17%, all-included benchmark 9.75%, scored-only 10.41%. The year-by-year table is `output/spec_v2/year_by_year_v2.csv`.
+
+### Factor regressions (market, size, value, momentum; Newey-West lag 4)
+
+| Series | Model | Alpha a year | t | Market | SMB | HML | MOM | RMW | CMA |
+|---|---|---|---|---|---|---|---|---|---|
+| High minus risk-free rate | 4-factor | -0.15% | -0.13 | 1.01 | 0.13 | -0.03 | -0.02 | - | - |
+| High minus risk-free rate | 6-factor | -0.86% | -0.75 | 1.02 | 0.18 | -0.07 | -0.02 | 0.18 | 0.04 |
+| Spread (High minus Low) | 4-factor | +0.01% | +0.01 | 0.01 | -0.23 | 0.11 | 0.04 | - | - |
+| Spread (High minus Low) | 6-factor | -1.53% | -0.68 | 0.03 | -0.13 | 0.08 | 0.05 | 0.42 | 0.01 |
+
+
+### The pre-specified tests, full period and subperiods
+
+| Test (High) | Period | Estimate a year | Std error | t | p | Holm-adjusted p | Minimum detectable effect, 80% power |
+|---|---|---|---|---|---|---|---|
+| Raw excess vs all-included | full | +0.08% | 0.76% | +0.10 | 0.921 | 1.000 | 2.13% |
+| Four-factor alpha | full | -0.15% | 1.14% | -0.13 | 0.896 | 1.000 | 3.19% |
+| Raw excess vs all-included | 2005-06 to 2015-05 | +1.13% | 1.00% | +1.13 | 0.259 | 1.000 | 2.82% |
+| Four-factor alpha | 2005-06 to 2015-05 | +2.28% | 1.46% | +1.56 | 0.121 | 0.606 | 4.12% |
+| Raw excess vs all-included | 2015-06 to 2025-12 | -0.92% | 1.09% | -0.85 | 0.399 | 1.000 | 3.08% |
+| Four-factor alpha | 2015-06 to 2025-12 | -3.38% | 1.25% | -2.70 | 0.008 | 0.047 | 3.53% |
+
+
+Only the second-half four-factor alpha is below 0.05 after adjustment, and it is one subperiod in a family of six, with the opposite sign in 2005-15 (+2.28%, t +1.56). Six-factor alpha: -0.86% (t -0.75) over the full period; -3.79% (t -3.01) in 2015-25.
+
+### How much the second-half result depends on the standard-error convention
+
+| Test (High) | Period | t as run (lag 4) | Holm p | t lag 4 with T/(T-k) correction | Holm p | t lag 6 | Holm p | t lag 12 | Holm p |
+|---|---|---|---|---|---|---|---|---|---|
+| Raw excess | full | +0.10 | 1.000 | +0.10 | 1.000 | +0.11 | 1.000 | +0.11 | 1.000 |
+| Four-factor alpha | full | -0.13 | 1.000 | -0.13 | 1.000 | -0.14 | 1.000 | -0.14 | 1.000 |
+| Raw excess | 2005-06 to 2015-05 | +1.13 | 1.000 | +1.13 | 1.000 | +1.30 | 0.785 | +1.40 | 0.652 |
+| Four-factor alpha | 2005-06 to 2015-05 | +1.56 | 0.606 | +1.53 | 0.646 | +1.68 | 0.482 | +1.94 | 0.272 |
+| Raw excess | 2015-06 to 2025-12 | -0.85 | 1.000 | -0.84 | 1.000 | -0.92 | 1.000 | -0.96 | 1.000 |
+| Four-factor alpha | 2015-06 to 2025-12 | -2.70 | 0.047 | -2.65 | 0.055 | -2.94 | 0.024 | -3.72 | 0.002 |
+
+
+The convention locked before returns was the automatic lag with no small-sample correction (column 'as run'). The second-half four-factor alpha is below 0.05 after Holm as run, at lag 6 and at lag 12, and not with the T/(T-k) correction at lag 4 (Holm 0.055). No other pre-specified test is below 0.05 under any of the four. These are shown side by side and were not used to choose. The automatic lag is the formula, not the data-dependent Newey-West (1994) bandwidth, which is unstable at 127 months. So read the second-half result as weak evidence: one subperiod in a family of six, borderline under one reasonable convention, with the opposite sign in the first half.
+
+### Subperiods
+
+| Period | Months | High CAGR | All-included benchmark CAGR | Scored-only benchmark CAGR | High excess vs all-included | Spread a year |
+|---|---|---|---|---|---|---|
+| 2005-06 to 2015-05 | 120 | 12.02% | 10.79% | 11.27% | +1.13% | +1.86% |
+| 2015-06 to 2025-12 | 127 | 9.55% | 10.79% | 11.44% | -0.92% | -1.44% |
+
+
+## The two benchmarks
+
+The all-included benchmark holds 800 list rows that have no score (of 8,414). They sit in the benchmark with their actual returns but cannot be in High, Middle or Low, and 53.9% of them are in GICS sectors 40 and 60 (REITs, which have no current assets or liabilities to score, and real estate). Over 2015-25 they ran -5.29% a year behind the all-included benchmark, a gross figure (before costs): a CAGR of 4.88% against 10.83% (computed by an audit script that is not included in this repository, not by the scripts that write the v2 tables). The effect is that the all-included benchmark runs 0.50% a year below the scored-only one in mean annual excess return (the gap in compound growth, CAGR, is 0.57%), so it flatters every scored bucket by about that much: High's excess is +0.08% against the first and -0.42% against the second. Neither is significant. Report both together; neither is the 'right' one. The scored-only benchmark compares like with like; the all-included one is the market of everything on the list.
+
+**Middle's 2015-25 result is mostly the benchmark.** Middle beat the all-included benchmark by +0.99% a year in 2015-25 (t +2.30, unadjusted and outside the Holm family), but only +0.39% (t +0.92) against the scored-only benchmark. It is not evidence that middle scores do well.
+
+## The issuance signal and the literal-rule sensitivity
+
+The first draft of v2 passed the no-issuance test only if common stock issued (`sstk`) was zero or missing. Before any return was read, it was found to fail most firm-years, because `sstk` includes option-exercise proceeds: the pass rate was 20.1% against 80.7% in v1, and High fell from 1,553 to 620 list rows. The rule was revised to net issuance (`sstk - prstkc`), which passes 67.9% and leaves High at 1,408 rows. That revision was made after seeing a pass rate and before any return; the literal rule is kept as a reported sensitivity and was never chosen from.
+
+| Portfolio | Net rule CAGR | Excess vs all-included | Literal rule CAGR | Excess vs all-included |
 |---|---|---|---|---|
-| Headline | 73 (43) | 31 (20) | 365 | none |
-| High cutoff 7+ | 170 (113) | 31 (20) | 365 | none |
-| Version B | 23 (8) | 13 (4) | 122 | **High 1, Low 8** |
-| Cap-weighted, sector-neutral, lag 90, costs 25 bps | 73 (43) | 31 (20) | 365 | none |
-| Eight-signal | 73 (46) | 32 (20) | 395 | none |
-| Universe buffer | 68 (42) | 32 (20) | 359 | none |
-| Profitability screen | 70 (43) | 18 (8) | 316 | **Low 2** |
+| High | 10.75% | +0.08% | 11.74% | +1.19% |
+| Middle | 11.41% | +0.50% | 11.16% | +0.27% |
+| Low | 10.19% | -0.09% | 10.86% | +0.19% |
 
-| Variant, High alpha (t) | June 2005 to May 2015 | June 2015 to December 2025 |
+
+Under the literal rule High's excess is +1.19% (t +0.86) and its four-factor alpha +0.77% (t +0.53); High beat the all-included benchmark in 10 of 20 complete years. That High bucket is thin and unusual (it selects firms that issued nothing; 620 list rows against 1,408 under the net rule), so the sign here says little. The full tables are in `output/spec_v2/literal_sensitivity/`.
+
+**The net signal drifts with the year.** Its pass rate over scored company-years was 43.0% for fiscal 2004 and 83.0% for fiscal 2022 (82.5% for 2024), probably because buybacks grew. It is not degenerate in level, but part of what it separates is the filing year, not the company within a year. Missing `prstkc` with positive `sstk` counts as no buyback, so those rows fail; the scores report sizes that choice.
+
+## v1 and v2: what changed, and why the sign of the excess flipped
+
+v1 reported High at 10.91% a year against 11.35% for its scored-only benchmark, an excess of -0.29% a year. v2 reports High at 10.75%, with an excess of +0.08% against the all-included benchmark and -0.42% against the scored-only one. The sign of the headline excess flipped from negative to slightly positive because the primary benchmark changed, not because High changed: High's own return moved by -0.16% of CAGR, while the benchmark that includes unscored names is 0.50% a year lower. Against the same kind of benchmark as v1, the excess is still negative and not significant.
+
+What changed, and the reason for each:
+
+- profit measure: `ib` (income before extraordinary items) instead of net income, because the paper uses it; ROA, CFO-minus-ROA accruals and the change in ROA move.
+- issuance test: net issuance instead of the share-count test with a 2% tolerance, because the paper tests whether common equity was issued; the first literal draft was rejected on a pass rate before any return.
+- availability: no 120-day fallback and a 3-day buffer, so a number is used only after a real filing date. In v1 only 6 chosen list rows used a fallback; the buffer moves 43 list rows to an earlier year.
+- zero-debt override only where the prior-year change is computable.
+- primary benchmark: all included names, so unscored companies are in the comparison instead of silently left out.
+- costs: the reinvestment of mid-period exits is charged.
+- statistics: automatic lag, t distribution, Holm adjustment over a pre-specified family, and reported power, instead of 12 fixed lags and a fixed |t| of 2.
+
+Across the 8,414 included list rows, High goes from 1,553 to 1,408, Middle from 5,290 to 5,348, Low from 728 to 858, and unscored from 843 to 800.
+
+v2 was specified after v1's results were known, after the external review, so it is a re-specification, not a blind second test. What is pre-specified is the set of v2 rules and tests, committed before any v2 return was read. The v1 write-up and its robustness runs remain in `output/archive_v1/` and the v1 files.
+
+## Against Piotroski's paper
+
+- Profitability: the paper uses income before extraordinary items; v2 does too (v1 used net income).
+- Equity issuance: the paper tests that no common equity was issued; v2 tests net issuance, `sstk - prstkc`, not exactly the paper's rule. v1's 2% share-count tolerance is dropped.
+- Leverage: the paper counts current-portion debt as well as long-term debt. Neither v1 nor v2 does: this is a deviation in both specifications.
+- Low: the paper's main weak group is scores 0-1, with 0-2 as a footnote alternative and below 5 in an appendix. This project's Low is 0-4 (changed from 0-2 on name counts before any return), so it is broader than the paper's.
+- The paper's own Table 4 finds the effect weak in the largest firms: High minus All +0.017 for large firms (t 0.872), against +0.088 for small firms (t 2.456).
+- Our result, no detectable edge among the largest companies, is consistent with the weak large-firm result, but it is not strictly comparable. The paper's large-firm difference of +0.017 (1.7 points) sits just outside our 95% range for High's excess (-1.42% to +1.57%), and the subperiod tests could only detect about 2.8% to 3.1% a year or more. Further: the paper uses pooled one-year market-adjusted returns on a high book-to-market sample, and this project uses annual portfolios of the 500 largest companies, factor-adjusted and net of costs.
+
+## Drop counts
+
+Per formation date, v1 beside v2, is in `output/spec_v2/drops_by_date_v2.csv`; one row per unscored name is `drops_reasons_v2.csv`; the summary is `drops_summary_v2.md`.
+
+| Stage | Count | Detail |
 |---|---|---|
-| Headline | +2.5% (1.76) | -3.8% (-4.10) |
-| High cutoff 7+ | +1.7% (1.89) | -2.1% (-2.61) |
-| Version B | +3.2% (1.37) | -5.5% (-2.91) |
-| Cap-weighted | -0.1% (-0.07) | -1.7% (-0.87) |
-| Sector-neutral | +1.7% (1.51) | -2.9% (-3.36) |
-| Lag 90 days | +2.5% (1.76) | -3.8% (-4.10) |
-| Costs 25 bps | +2.2% (1.57) | -4.1% (-4.45) |
-| Eight-signal | +2.3% (1.68) | -4.0% (-4.33) |
-| Universe buffer | +2.4% (1.56) | -3.6% (-3.41) |
-| Profitability screen | +2.7% (1.94) | -4.0% (-4.17) |
+| Companies on the 21 lists | 10,500 | Exactly 500 a date |
+| No GVKEY link | 13 | Eaton, Dell, Liberty, Ceridian |
+| No sector | 13 | Yahoo |
+| Securities removed as stopped trading, before ranking | 727 | security-dates |
+| Included company-dates | 8,414 | After sector exclusions |
+| Unscored in v1 | 843 (10.0%) | missing or too old |
+| Unscored in v2 | 800 (9.5%) | reasons below |
+| Held company-dates in the buckets (v2) | 7,614 |  |
 
-**What this shows:**
 
-- **Full period:** no variant has a significant High alpha, and all nine are slightly negative (t from -0.30 to -0.94). No variant's full-period spread alpha is significant either.
-- **The time pattern is not independently confirmed.** High's alpha is lower in 2015-25 than 2005-15 in every variant, and it reaches |t| of 2 in 8 of 9. These are not separate tests: most variants hold nearly the same stocks (Lag 90 days is identical to the headline), and across all 10 series there are only about 4 to 5 effectively separate tests. The variant that differs most, cap-weighted, is not significant (t -0.87). The same lag caution applies, and the benchmark itself runs negative in that period.
-- **Version B is the closest to Piotroski's sample,** because he studied cheap stocks. It is still large companies only. It holds the cheapest third by book-to-market, ranked among scored USD names on each date. Book equity is common equity plus deferred taxes (`ceq + txditc`, a null `txditc` counting as zero); non-positive book equity stays ranked and is never cheapest. High matched its own cheap-third benchmark on average return (-0.00% a year), though it compounded more slowly (9.96% vs 10.35%), with an alpha of -1.11% (t -0.59). Its Low bucket is thin (under 10 names on 8 of 21 dates), so its spread is noisy.
-- **Version B bug fix, found after results:** the first run missed 7 rows that sit exactly on the two-thirds point (Coventry 2007, Bath & Body Works 2008, Constellation 2014, Target 2016, Cerner 2021, AMD 2023, TransUnion 2025), because of a floating-point rounding error, contrary to the approved rule. Correcting it to the approved rule lowered the result. High alpha went from -0.87% (t -0.46) to -1.11% (t -0.59); 2015-25 alpha from -5.10% (t -2.68) to -5.51% (t -2.91); and High minus Benchmark from +0.21% to -0.00% a year. Only two of the seven, Target and TransUnion, are High names, which shows how sensitive this thin variant is to one or two names. The headline does not use this column and did not move.
-- **Cap-weighted:** High's gap to the benchmark widens to -0.99% a year, against a benchmark growing 12.64%. In that variant, the 2015-25 spread alpha reaches t -2.03, but that is one of 60 alpha tests in these tables, and chance could produce one such result among that many.
-- **Lag 90 days is identical to the headline:** no list row changes. Only one fallback date crosses a May date (UiPath, fiscal year ending January 2021, May 2021 list), and it changes no score.
-- **Eight-signal:** 641 list rows use 8 signals (31 High, 578 Middle, 32 Low), mostly real estate and financial-sector REITs (429 rows) and some industrial and consumer firms. The benchmark falls from 11.35% to 10.91% a year. Buckets: High 8, Low 0-3, Middle 4-7, out of 8.
-- **Universe buffer:** names enter at rank 450 or better and stay until they pass rank 550, starting from the 2005 top 500. Lists hold 481-501 companies before exclusions, and 318-377 are scored.
-- **Profitability screen:** it requires positive trailing-four-quarter and latest-quarter net income, across every bucket and the benchmark. It overlaps with F_ROA, and it removes far more of Low than of High. Of 7,571 rows, 6,582 pass, 973 fail on earnings and 16 are unconfirmed (14 null earnings, 2 non-consecutive quarters), which count as failing. High loses 74 of 1,553 rows and Low loses 350 of 728. Quarterly availability uses the 10-Q or 10-K filing date with the same 120-day fallback, not the earnings announcement date; 26 list rows have a fallback date on their newest quarter. Quarterly net income comes from current Compustat, so it has the same restatement limit as the annual data.
-- **Null returns held flat:** two cases have no return without being exits, and each is treated as flat in its variant only. General Growth Properties, May 2009 (eight-signal), and Comverse Technology, February to May 2007 (buffer, on the 2006 list, sold at its last value at the 2007 rebalance). Comverse is one name out of 221 in Middle and 331 in the Benchmark that year; holding it flat instead of treating it as an exit lowers full-period growth by 0.16 basis points a year for Middle and 0.11 for the Benchmark, and High and Low are unaffected. Any other null in a held position stops the run, and none occurred.
+Why the v2 unscored names are unscored (list rows):
 
-Full results: `output/tables/robustness_comparison.csv`, `output/tables/robustness_subperiods.csv`, `output/robustness/`.
+| Reason | List rows | Share of unscored |
+|---|---|---|
+| missing signal | 689 | 86.1% |
+| unscorable t-2 (no consecutive prior years) | 54 | 6.8% |
+| no 10-K filing date | 25 | 3.1% |
+| stale score | 15 | 1.9% |
+| no usable fiscal year | 13 | 1.6% |
+| stub or fiscal-year change | 4 | 0.5% |
+
+
+Missing-signal cases are mostly the liquidity signal: 647 of the 689 (REITs and finance-arm firms have no current assets or liabilities). Unscored names in sectors 40 and 60: v1 431 of 843; v2 431 of 800. Firm-years with no real 10-K filing date: 633, of which 112 would otherwise have a score. 13 list rows use an older year because the newest filed year is unscorable and 43 because the newest filing fell inside the buffer. Counting v1's scored rows, the 44 buffer cases are 43 scored from an earlier year and 1 stale; the 6 fallback-dated cases are 3 stale and 3 with no earlier scored year. Together: 43 scored from an earlier year, 4 stale and 3 with no earlier scored year. The scores report counts differently: every included row with a scorable filing inside the buffer, whether or not v1 scored it, which gives 45 (43 older year, 1 stale, 1 unscored in v1 and v2 alike). v1 had 15 scored list rows filed on the formation date itself and 44 within 3 days.
 
 ## Limitations and disclosures
+
+*The next block, on the universe and who is in and out, is carried unchanged from the v1 write-up because the universe is unchanged.*
 
 **The universe is a proxy.**
 
@@ -169,84 +219,41 @@ Full results: `output/tables/robustness_comparison.csv`, `output/tables/robustne
 - Yahoo 2005-2017 has no sector on the date and is excluded.
 - Securities that stopped trading before the formation date are removed before ranking.
 
-**The test effectively excludes some companies.** A company-year with any uncomputable signal is dropped. That effectively excludes traditional REITs, most homebuilders and finance-arm firms, which have no current assets or liabilities in Compustat. Only 26 of 247 kept REIT rows in Financials and 64 of 274 Real Estate rows have a score, against 91%-97% in other sectors. The eight-signal variant shows the effect of including them.
 
-**The benchmark choice matters to the sign of the raw gap.** The Benchmark holds scored names only, which compares like with like. In a later check, a sensitivity seen after results that changed no rule, the 843 unscored rows earned 6.24% a year gross (alpha -4.18%, t -2.01). Against all included names (10.79% net), High's raw gap is +0.19% a year (t 0.22), with alpha -0.44% (t -0.45), and is still not significant.
+**The test effectively excludes some companies.** A company-year with any uncomputable signal is dropped: 800 list rows are unscored, 53.9% of them in sectors 40 and 60. That effectively excludes traditional REITs, most homebuilders and finance-arm firms, so the result describes the rest of the large-company universe. The v1-specification REIT run below shows the effect of including REITs.
 
-**Low is broader than Piotroski's weak group.** `LOW_SCORES` was changed from 0-2 to 0-4 on name counts only, before any returns: scores 0-2 had a median of 2 names a date and were empty in 2006, 2007 and 2011. Middle is therefore 5-7.
+**Low is broader than Piotroski's weak group** (see the paper comparison). Middle is therefore 5-7.
 
 **Data limits.**
 
-- Restatements: Fundamentals come from the current Compustat database, not a record of what was reported at the time, while availability dates use original 10-K filing dates. In a test on a sample of 1,480 companies for 2005-2015, 98.5% of F-scores matched those computable at the time and 0.2% changed bucket. Any remaining look-ahead from restated figures could not be measured for the whole sample or for later years. Only 55 of those companies are in this project; for them, 97.3% matched and 0.45% changed bucket. The test ends with fiscal 2014 and uses today's share adjustment.
+- Restatements: fundamentals come from the current Compustat database, not a record of what was reported at the time, while availability dates use original 10-K filing dates. In a test on a sample of 1,480 companies for 2005-2015, 98.5% of F-scores matched those computable at the time and 0.2% changed bucket; only 55 of those companies are in this project, where 97.3% matched and 0.45% changed bucket. That test used the v1 scores and net income. It could not be extended to fiscal 2015 to 2024, because the point-in-time snapshot table (`comp_snapshot`) is not available to this account. So any look-ahead from restated figures is unmeasured for the later years, which include the second half where the one nominally significant result sits.
 - Returns end in December 2025, so the 2025 portfolio is partial, and the last subperiod ends then.
-- The thin May 2005 list: 25 companies with January-May year-ends have no score that year, because the data pull is not extended. 318 of 384 included names are scored on that date.
-- Two companies report in Canadian dollars (11 rows). They are not converted. Ratios are unaffected, and their 3 list rows (Tim Hortons) are excluded from version B only.
+- Two companies report in Canadian dollars; they are not converted, and ratios are unaffected.
+- Merger and separation years are kept: assets or sales move 2x-10x on some list rows, and comparisons across a change of CRSP company are not always valid. See `output/tables/permco_joins_review.csv` (v1 file, same fundamentals).
 
-**Timing and accounting choices.**
+**Timing of the specification.**
 
-- Fallback lag: 2.91% of fiscal 2004-2024 company-years with assets use year-end + 120 days, but only 6 of 7,571 chosen list rows do.
-- 10-K filings over 120 days late: 108. Over a year late: 13, such as Maxim FY2006 and Fannie Mae FY2004. They are real dates and are used.
-- 13 list rows use an older fiscal year because the newest available year has no score (such as Best Buy, Mastercard and Salesforce). 15 list rows were filed on the formation date itself and may not have been known at that day's close.
-- Same-day filings are resolved to the later fiscal year (Maxim, United Rentals). Availability order inverts for H&R Block FY2021 and Super Micro FY2017, and no list row is affected.
-- Fiscal-year changes: 49 stub years are flagged, and no year-over-year comparison runs into or out of them. Share counts under 1 million are treated as placeholders, so the share test is not computed. Margin is not computed when sales are zero or negative.
-- Year-over-year moves above 10x are flagged, never dropped: assets 15, sales 42, adjusted shares 64.
-
-**Merger and separation years are kept.** 270 list rows have 2x-10x moves in assets or sales, including real company split-ups, and these distort year-over-year tests. 20 GVKEYs span two PERMCOs over time. Comparisons that look invalid and reach a list: DuPont FY2017-18, Match FY2020-21, Starz FY2011, Dell FY2018 and Kraft Heinz FY2016. Splits that keep the same PERMCO, such as DuPont FY2019, are not caught by this test. See `output/tables/permco_joins_review.csv`.
+- The v2 rules were first committed in the project's working repository (those commits are not part of this public repository's history) as 5ce0e23 (2026-11-01 23:01), before any v2 return existed. Between the pre-return score report and the first v2 return file (created 2026-11-02 17:25:08) three more commits changed the specification: 9865622 (17:18) revised the issuance rule from `sstk > 0` to `sstk` net of `prstkc`, because the literal rule flagged 77% of firm-years as issuers (option-exercise proceeds); a054143 (17:19) locked clarifications raised by the independent rebuild; and 24d636f (17:22) locked the hold-flat treatment of Maxim (2007-11 to 2008-05) and General Growth (2009-05) in the benchmark. No v2 return existed before 17:25. Since 24d636f, `config.py` changed only by the `HEADLINE_SPEC` line and a comment on the `SPEC_V2` line (commit 600824d). The small-sample correction for the standard errors, T/(T-k), was suggested during review but was not in the locked configuration, so it is a reported sensitivity, not the as-run convention. The 3-day buffer is an assumption, not a derived number. Some auditors compared v1 returns of dropped rows before the older-year clarification was settled; no v2 return was read.
+- v2 itself was specified after v1's results were known, so it is not a blind test of a fresh hypothesis. The claims in the archived v1 write-up about when its own rules were set rest on the project lead's account, as that write-up says; no file can show the order of events.
+- The builds share the same data and several of the same rules, so an independent rebuild checks the arithmetic and the implementation, not whether the rules are the right ones or the data true.
 
 **Portfolio mechanics.**
 
-- 4 included names delist on the formation date (CNX Gas 2010, Pride 2011, Waste Connections 2016, Valspar 2017) and have no later returns. Their weight is spread pro rata in the first holding month, and they are charged as buys. Waste Connections continued under PERMNO 92949; in a later check, following it moves the Spread alpha from -2.04% to -2.06%, with High unchanged.
-- 179 mid-period exits (High 32, Middle 125, Low 22). Reinvesting their proceeds is not charged.
+- 191 mid-period exits across the all-included benchmark and buckets (Middle 125, Low 28, High 27, Unscored 11, each name counted under its own bucket); proceeds are reinvested pro rata and the reinvestment is charged one side in the exit month. 4 included names delist on the formation date (CNX Gas 2010, Pride 2011, Waste Connections 2016, Valspar 2017): they count at 1/N in the target, are charged as buys, earn nothing, and their weight is respread uncharged.
+- Maxim Integrated (November 2007 to May 2008) and General Growth Properties (May 2009) have no return for some months and no exit; they are held flat at 0%, uncharged, in the all-included benchmark only. The choice was fixed before any v2 return, and moves the benchmark slightly; a different rule is not tested.
 - RSP has two rows for April 2018 and they are chained into one return.
-- The spread carries no shorting costs, and its -65.9% drawdown compounds a long-short series with no financing, so it is a rough diagnostic only.
-- The published net Spread column subtracts Low's net return from High's, which credits Low's trading costs to the spread by about 0.35 points a year. It stays as published, at -0.57% a year (alpha -2.04%, t -0.72). With both legs charged, the Spread is -0.92% a year (alpha -2.39%, t -0.85).
-- t-stats use no small-sample correction, and significance is a fixed |t| of 2.
-
-**Robustness timing.** The robustness definitions and null-return rules were set after the headline existed. The independent builder's first variant run and the main build's crashed run existed before two later rules were settled: the Comverse hold-flat rule and the instruction to use the quantile boundary for version B. By the coordinator's record, those results were not reported to the coordinator or the other builder, but each author had access to its own, so these rules were not set blind. Also by the coordinator's record, the Comverse rule was recommended by the independent builder, whose first run already held Comverse flat, before the two builds' results were compared. No file can show the order of these events: the repository's history begins after these events, and file dates show only the last save. The rule's effect is -0.16 basis points a year on Middle and -0.11 on the Benchmark, with High and Low unaffected. Bucket placement for the eight-signal version could not be set before any returns existed, as first planned.
-
-## Drop counts
-
-| Stage | Count | Detail |
-|---|---|---|
-| Securities removed before ranking, security-dates | 72,677 | Stopped trading 727; not US-incorporated 20,572; funds, ETFs and closed-end funds 47,816; other exchange 1,494; share type 2,060; missing price 8 |
-| Companies on the 21 lists | 10,500 | Exactly 500 a date |
-| No GVKEY | 13 | Eaton 8, Dell 2, Liberty 2, Ceridian 1 |
-| No sector | 13 | Yahoo |
-| Sector exclusions | 2,060 | Financials and utilities, of which 19 are mortgage REITs; 247 equity REITs kept |
-| **Included company-dates** | **8,414** | |
-| No score known by the date | 794 | |
-| Score too old | 49 | |
-| **Held company-dates** | **7,571** | |
-
-| Score stage | Count |
-|---|---|
-| Company-years, FY2004-2024 | 18,265 |
-| Scored | 13,993 |
-| **Dropped** | **4,272** |
-
-| Signal | Uncomputable | Flagged year | No prior year | No comparison two years back | Null input | Sale or share minimum |
-|---|---|---|---|---|---|---|
-| F_ROA | 438 | 89 | 226 | 0 | 123 | 0 |
-| F_CFO | 441 | 89 | 226 | 0 | 126 | 0 |
-| F_DROA | 742 | 89 | 226 | 289 | 138 | 0 |
-| F_ACCRUAL | 441 | 89 | 226 | 0 | 126 | 0 |
-| F_DLEVER | 751 | 89 | 226 | 240 | 196 | 0 |
-| F_DLIQUID | 3,662 | 89 | 226 | 0 | 3,347 | 0 |
-| F_EQ_OFFER | 815 | 89 | 226 | 0 | 399 | 101 |
-| F_DMARGIN | 510 | 89 | 226 | 0 | 131 | 64 |
-| F_DTURN | 742 | 89 | 226 | 289 | 138 | 0 |
-
-A company-year can miss several signals, so these overlap. 3,124 company-years are dropped for F_DLIQUID alone.
+- No size-dependent trading costs are modelled: every trade pays 10 basis points whatever the company's size or liquidity, and the shorting costs of the Spread are not modelled.
+- REIT and real estate coverage is thin by construction (see above): 53.9% of unscored names sit in sectors 40 and 60.
 
 ## Verification
 
-The user's hand-check of four companies against their 10-Ks matched. Independent rebuilds of the universe, scores and headline returns, and audits of each phase, are in `verification/`. They found no look-ahead, survivorship or return bug, and placebo tests (the same run with shuffled scores) behaved as expected. Those checks describe this sample and these methods. They do not show that the 2015-25 shortfall would continue. The robustness runs were independently rebuilt and audited: all 10 series match. A rebuild does not test the rules and data the builds share, so it shows the rules were implemented consistently, not that they are the right rules or that the data is true. The version B rounding error is an example: both builds first matched exactly while sharing it, and a separate audit found it.
+Every number in the results tables was recomputed from the monthly return file with separate numpy/scipy code (`16_spec_v2_numcheck.py`; reports in `output/spec_v2/numcheck_v2.md`), and the figures in this write-up are generated from the v2 files by `17_spec_v2_writeup.py`, with their sources in `output/spec_v2/writeup_figures_v2.csv`. The v1 scripts, v1 outputs and all earlier raw and clean data files are unchanged by hash. Independent rebuilds and audits of v2 are separate reports in `verification/`; this write-up uses one figure from them (the unscored names' return, above), and the audit scripts are not included in this repository. A rebuild does not test the rules and data the builds share.
 
-A final re-audit tested the finished project at one commit. From a clean copy with no data folder, the scripts ran through once a helper outside the numbered order was added, and every data file, result table and chart matched. A line-by-line read of the scoring code and cross-checks from other angles found no wrong number. The sensitivities in this write-up to the share tolerance, the zero-debt rule and the benchmark came from that re-audit (`verification/reaudit_agent3.md`). It led to label, log and wording fixes, a clearer run order and one count correction, and no rule, score or return changed. The count correction applied a date tie-break in `04_scores.py`: score 8 went from 1,255 to 1,256 list rows and 2009 sector 45 from 65 to 66, both now agreeing with the formation file, with no change to any portfolio. It did not establish that the rules are the right ones, that later WRDS pulls would match, or who saw which result when, and the clean-copy runs used the same machine, saved login and same-day data. After the fixes, a second clean copy ran all scripts in the numbered order from no data folder, and every data file, result table and chart matched.
+## Runs after the v1 write-up: run on the v1 specification, not rerun under v2
 
-## Runs after this write-up
+The user asked for three further runs after the v1 write-up was finished. **None of them is the headline, none was rerun under v2, and none changes a figure or the answer above.** They used the v1 scores, the v1 scored-only benchmark and v1 costs, so in the tables below 'Headline' means the v1 headline. Each has its own folder, and new data went into new files. All are for the same universe, the Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy), and all figures are net of costs.
 
-The user asked for three further runs after this write-up was finished. **None of them is the headline, and none changes a figure or the answer above.** Each has its own folder, and new data went into new files. All are for the same universe, the Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy), and all figures are net of costs.
+*The rest of this section is carried unchanged from the v1 write-up.*
 
 Each run's monthly returns were independently rebuilt or audited (`verification/data_audit_post_writeup.md`, `verification/data_audit_long_short.md`). A rebuild shows the arithmetic is right, not that a rule is the right one.
 
@@ -254,9 +261,9 @@ Each run's monthly returns were independently rebuilt or audited (`verification/
 
 This holds the 2025 portfolio through May 2026, so that 2025-26 becomes a complete year, with no new rebalance or cost.
 
-The January-May 2026 extension uses Compustat monthly returns because CRSP data on this account ends in December 2025. It is reported separately and does not change any headline figure. On 15,752 earlier held months, Compustat agrees with CRSP within 1% on 99.96%, but it differs at spin-offs (up to 8.4 points on a single stock) and at delistings. Two spin-offs (Becton Dickinson, Comcast) and two acquisitions (Hologic, Coterra) fall in the window. No bankruptcies do.
+The January-May 2026 extension uses Compustat monthly returns because CRSP data on this account ends in December 2025. It is reported separately and does not change any v1 headline figure. On 15,752 earlier held months, Compustat agrees with CRSP within 1% on 99.96%, but it differs at spin-offs (up to 8.4 points on a single stock) and at delistings. Two spin-offs (Becton Dickinson, Comcast) and two acquisitions (Hologic, Coterra) fall in the window. No bankruptcies do.
 
-| | Headline, to December 2025 | Extended, to May 2026 |
+| | v1 headline, to December 2025 | Extended, to May 2026 |
 |---|---|---|
 | High CAGR | 10.91% | 11.44% |
 | Benchmark CAGR | 11.35% | 11.86% |
@@ -271,7 +278,7 @@ The January-May 2026 extension uses Compustat monthly returns because CRSP data 
 January-May 2026 alone: High +15.36%, Middle +11.12%, Low +45.07%, Benchmark +15.16%, RSP +9.48%, SPY +11.24%.
 
 - **Few names carry it.** Western Digital and Intel supply 29.4 of Low's 45.07 points, and Micron 9.06 of High's 15.36. Those positions were large because the fixed 12-month hold let them drift there. The rest is breadth: 84.8% of Low rose against 51.4% of High, with a median stock of +16.7% against +0.3%.
-- **Five months say little.** The window adds no real evidence on whether the F-score works. It is one narrow episode, part of one holding year, about one sector-driven market move, and it should not strengthen or weaken the headline in either direction. Average Spread three times larger after 5 of 252 months should not be read as a stronger trend.
+- **Five months say little.** The window adds no real evidence on whether the F-score works. It is one narrow episode, part of one holding year, about one sector-driven market move, and it should not strengthen or weaken the v1 headline in either direction. Average Spread three times larger after 5 of 252 months should not be read as a stronger trend.
 - **The t of -3.16 needs the same lag caution.** It is about -2.7 to -3.2, and about -2 with no lag allowance. The alpha falls in the lowest 1.7% of random selections, but the lowest 12.5% if they keep High's sector mix.
 - **Data.** The prices were confirmed against a separate vendor, but month-end prices and spin-off treatment have only S&P sources. CRSP cannot check these months yet, and they should be compared with it when it can.
 
@@ -279,9 +286,9 @@ Source files: `output/extension_2026/results.md`, `validation.md`, `returns.csv`
 
 ### REIT liquidity substitute: not the headline, not a blind test
 
-The headline effectively excludes traditional REITs, because they have no current ratio. Here a row-level REIT with no liquidity signal uses a rise in cash to total liabilities (`che / lt`) instead, on the same 0-9 scale and buckets. The rule was set after similar variants had been seen. It covers June 2005 to December 2025 on CRSP.
+The v1 headline effectively excludes traditional REITs, because they have no current ratio. Here a row-level REIT with no liquidity signal uses a rise in cash to total liabilities (`che / lt`) instead, on the same 0-9 scale and buckets. The rule was set after similar variants had been seen. It covers June 2005 to December 2025 on CRSP.
 
-| | Headline | REIT substitute |
+| | v1 headline | REIT substitute |
 |---|---|---|
 | Scored REIT rows | 80 of 512 (15.6%) | 510 of 512 (99.6%) |
 | High CAGR | 10.91% | 10.63% |
@@ -293,7 +300,7 @@ The headline effectively excludes traditional REITs, because they have no curren
 
 It adds 430 list rows (High 61, Middle 302, Low 67) across 44 companies. The signal passes 48.1% of the time.
 
-- **This is the same result, not new evidence.** Its monthly returns correlate 0.9989 with the headline's. Most of the fall in alpha comes from adding REITs of any kind, in both High and the Benchmark, so the score is not choosing worse REITs. The variant shows that the headline result holds when most missing REITs are added, and that REITs were weak in that decade. The rise in t from -4.10 to -4.40 should not be quoted as stronger evidence, and the same lag caution applies.
+- **This is the same result, not new evidence.** Its monthly returns correlate 0.9989 with the v1 headline's. Most of the fall in alpha comes from adding REITs of any kind, in both High and the Benchmark, so the score is not choosing worse REITs. The variant shows that the v1 headline result holds when most missing REITs are added, and that REITs were weak in that decade. The rise in t from -4.10 to -4.40 should not be quoted as stronger evidence, and the same lag caution applies.
 - **The signal is noisy.** The median REIT holds cash of 2.75% of liabilities, so it mostly reflects year-end cash timing.
 - **Still dropped.** 211 included rows still miss only the liquidity signal, all non-REITs. 2 REIT rows miss another signal.
 

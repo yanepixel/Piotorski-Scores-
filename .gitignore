@@ -21,3 +21,16 @@ __pycache__/
 !output/tables/returns_by_score.csv
 output/logs/
 output/extension_2026/validation.md
+
+# spec_v2 summary tables (portfolio level, no company values). Every other spec_v2 CSV stays out.
+!output/spec_v2/headline_v2.csv
+!output/spec_v2/tests_v2.csv
+!output/spec_v2/subperiods_v2.csv
+!output/spec_v2/year_by_year_v2.csv
+!output/spec_v2/versus_v2.csv
+!output/spec_v2/factor_loadings_v2.csv
+!output/spec_v2/drops_by_date_v2.csv
+!output/spec_v2/headline_v2_numbers.csv
+!output/spec_v2/writeup_figures_v2.csv
+!output/spec_v2/literal_sensitivity/headline_v2.csv
+!output/spec_v2/literal_sensitivity/tests_v2.csv

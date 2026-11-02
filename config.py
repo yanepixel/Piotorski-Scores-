@@ -147,6 +147,8 @@ NULL_RETURN_HOLD_FLAT_MONTHS = {      # the only approved cases, by variant and 
     "eight_signal_no_liquidity": {79129: ["2009-05"]},  # General Growth
     "reit_liquidity_substitute": {79129: ["2009-05"]},  # General Growth
     "universe_buffer": {10942: ["2007-02", "2007-03", "2007-04", "2007-05"]},  # Comverse Technology
+    "spec_v2": {11896: ["2007-11", "2007-12", "2008-01", "2008-02", "2008-03", "2008-04", "2008-05"],  # Maxim Integrated, unscored, all-included benchmark only
+                79129: ["2009-05"]},  # General Growth, unscored in v2, all-included benchmark only; held flat, no charge, set before any v2 return
 }
 CAP_WEIGHT_BASIS = "formation_mktcap" # then drift; applies to all buckets and the benchmark
 SECTOR_NEUTRAL_WEIGHTS = "benchmark_sector_weights"  # equal weight within sector; sector weights from the benchmark on that date
@@ -193,5 +195,24 @@ REIT_LIQUIDITY_SUBSTITUTE = {         # post-write-up labelled variant, not in R
     "buckets": "standard",            # 0-9 scale, so HIGH_SCORES and LOW_SCORES apply
     "null_return_rule": "hold_flat",  # General Growth, May 2009 only; any other held null stops the run
 }
-BUFFER_FIRST_LIST = "top_500"        # 2005 has no history; membership tracks PERMCO on the pre-exclusion ranking
+HEADLINE_SPEC = "spec_v2"             # designated by the user on 2026-11-02; v1 outputs are kept unchanged as the superseded first specification
+SPEC_V2 = {                           # re-specification after external review; now the headline; v1 outputs stay untouched
+    "label": "spec_v2",
+    "output_dir": "output/spec_v2",
+    "profit_field": "ib",             # net income before extraordinary items, as in the paper, replaces ni in ROA, CFO-ROA accruals and DROA; new raw pull
+    "issuance_field": "sstk_net_of_prstkc",   # REVISED before any v2 return: F_EQ_OFFER = 1 if sstk - prstkc <= 0 (null counts 0), else 0. Literal sstk > 0 flagged 77% of firm-years (option-exercise proceeds), pass rate 20% against 81% in v1; it is kept as a reported sensitivity
+    "issuance_sensitivity": "sstk_literal",   # F_EQ_OFFER = 1 only if sstk is 0 or null; run and reported beside, never chosen from
+    "zero_debt_requires_lag2": True,  # ZERO_DEBT_COUNTS_AS_PASS stays, but only where the prior-year inputs for the change exist
+    "fallback_availability": "exclude",  # a firm-year with no real 10-K filing date is unscorable; no 120-day fallback
+    "availability_buffer_days": 3,    # filing date + this many calendar days must be on or before the formation date; an assumption
+    "primary_benchmark": "equal_weight_all_included",   # scored and unscored included names; the scored-only benchmark is reported beside it
+    "charge_every_trade": True,       # mid-period reinvestment after an exit is charged at TRANSACTION_COST_BPS like any other trade
+    "hac_lag_rule": "newey_west_1994_automatic",        # floor(4 * (T / 100) ** (2 / 9)), replaces the fixed 12 lags
+    "small_sample": "t_distribution_T_minus_k",         # critical values and p-values from t with T - k degrees of freedom
+    "primary_tests": ["raw_excess_vs_primary_benchmark", "mkt_smb_hml_mom"],   # six-factor alpha is secondary because RMW overlaps the screen
+    "multiple_testing": "holm_over_prespecified_family",   # family: full period and the two SUBPERIODS from the original config
+    "report_power": True,             # minimum detectable excess return and alpha at 80% power, 5% two-sided
+    "sensitivities": ["hac_lag_12", "scored_only_benchmark"],   # reported beside, never used to choose
+}
+BUFFER_FIRST_LIST = "top_500"       # 2005 has no history; membership tracks PERMCO on the pre-exclusion ranking
 BUFFER_NULL_RETURN_RULE = "hold_flat" # no return, not an exit; sold at last value at the next rebalance: Comverse Technology, 2007-02 to 2007-05
