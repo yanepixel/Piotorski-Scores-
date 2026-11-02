@@ -1,0 +1,11 @@
+universe_label,portfolio,basis,months,CAGR,volatility,sharpe,max_drawdown,avg_turnover_two_way,avg_turnover_one_way,avg_annual_cost
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",High,net,247,0.10908784959983331,0.1679384333336268,0.6048777057067071,-0.4435655884631473,1.63879008113426,0.81939504056713,0.001638790081134205
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Middle,net,247,0.11256452198279976,0.15854093972771427,0.6504776863653354,-0.4980606529711815,0.8109551700159432,0.4054775850079716,0.000810955170015895
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Low,net,247,0.10932530329280876,0.19853237096299312,0.5389671395254946,-0.6099333859950931,1.7579088445744613,0.8789544222872306,0.0017579088445744194
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Benchmark,net,247,0.11347921221712509,0.16173018311499587,0.6457879332776688,-0.4909320066677344,0.3412924498202158,0.1706462249101079,0.00034129244982016493
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",RSP,fund return,247,0.0985314361216123,0.17002011880607829,0.5423123834101968,-0.5558668867104364,,,
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",SPY,fund return,247,0.10883949821361383,0.14904432753182922,0.6599989606775507,-0.5079769991069317,,,
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",High,gross,247,0.11091076214436035,0.1678443156433407,0.6149740608454354,-0.4426307893165665,,,
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Middle,gross,247,0.1134960214691072,0.15850438063393463,0.655909393382705,-0.4975991680807932,,,
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Low,gross,247,0.11127744507095993,0.19852364087942184,0.5478810034882601,-0.6084354517987404,,,
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Benchmark,gross,247,0.11390273278758367,0.16171548545693645,0.6482007558823193,-0.4906994116147577,,,

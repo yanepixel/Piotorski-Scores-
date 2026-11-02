@@ -1,0 +1,11 @@
+universe_label,F_SCORE,avg_annual_return,complete_years,avg_names,partial_2025_return,under_minimum_names
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",0,,1,1.0,,True
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",1,0.038142600298403405,6,1.6666666666666667,,True
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",2,0.1968018404786632,14,2.5714285714285716,,True
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3,0.14388172412708605,20,7.75,,True
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",4,0.1360152579645827,20,24.65,0.15119192901390943,False
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",5,0.12597050883462352,20,67.85,0.1546506250858477,False
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",6,0.11748236057842483,20,94.25,0.11955687986847297,False
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",7,0.13336794881466166,20,89.65,0.04760837957747688,False
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",8,0.12026162597222423,20,59.75,0.09611221542948045,False
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",9,0.136279047691123,20,14.1,0.18706525583779055,False

@@ -1,0 +1,10 @@
+universe_label,signal,pass_pct_scored,pass_pct_all_computable,computable_company_years
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_ROA,84.5,84.7,17827
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_CFO,94.8,93.7,17824
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_DROA,52.1,52.1,17523
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_ACCRUAL,89.4,87.2,17824
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_DLEVER,58.0,57.6,17514
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_DLIQUID,47.7,47.8,14603
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_EQ_OFFER,80.7,78.6,17450
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_DMARGIN,53.8,53.3,17755
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",F_DTURN,50.4,50.2,17523

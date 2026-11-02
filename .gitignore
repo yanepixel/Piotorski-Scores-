@@ -1,0 +1,23 @@
+# Licensed WRDS data and files derived from it stay out of this repository.
+data/
+*.parquet
+__pycache__/
+
+# Reruns write logs and detail files here. Only the listed summary tables are published.
+*.csv
+!output/tables/bucket_counts.csv
+!output/tables/coverage_by_sector_year.csv
+!output/tables/factor_regressions.csv
+!output/tables/performance.csv
+!output/tables/portfolio_turnover.csv
+!output/tables/robustness_comparison.csv
+!output/tables/robustness_subperiods.csv
+!output/tables/score_distribution.csv
+!output/tables/signal_pass_rates.csv
+!output/tables/signal_pass_rates_by_year.csv
+!output/tables/subperiods.csv
+!output/tables/versus_benchmark.csv
+!output/tables/year_by_year.csv
+!output/tables/returns_by_score.csv
+output/logs/
+output/extension_2026/validation.md
