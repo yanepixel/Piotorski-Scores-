@@ -70,5 +70,6 @@ for fn, cols in sources.items():
         L.append(f"  - {c}: {int(diff.sum())} rows differ")
         fails += int(diff.sum())
 L.append(f"\nTotal differing cells against the separate pulls: {fails}. A non-zero count would mean the earlier separate pulls came from different vintages.")
+(ROOT / "output" / "spec_v3").mkdir(parents=True, exist_ok=True)
 (ROOT / "output" / "spec_v3" / "single_pull_log.md").write_text("\n".join(L), encoding="utf-8")
 print("\n".join(L))
