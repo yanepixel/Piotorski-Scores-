@@ -91,4 +91,4 @@ WRDS revises its data, and recent Compustat rows change most often. `01_build_un
 
 ## Not in this repository
 
-The public repository omits company-level tables (`output/reference/`, exit lists, drop reasons, per-company rows), the cleaned and raw data, and the audit and rebuild scripts. `output/disclosures.md` is the text of the first write-up's disclosures; its counts describe the universe and its quirks, not exact current numbers.
+The public repository omits company-level tables (output/reference/, exit lists, drop reasons, per-company rows), the cleaned and raw data, and the audit and rebuild scripts. output/disclosures.md is the text of the first write-up's disclosures; its counts describe the universe and its quirks, not exact current numbers.

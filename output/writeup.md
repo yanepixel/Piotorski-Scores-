@@ -97,7 +97,7 @@ Inside our 500 names only: top book-to-market quintile, High-score names against
 
 The High bucket has a median of 5 names (17 of 21 dates under 10), and the test can only detect effects of about 9% a year, so it is uninformative rather than a refutation.
 
-## Extension to May 2026 and the REIT substitute, (`18_extension.py`, `19_reit.py`; descriptive only)
+## Extension to May 2026 and the REIT substitute (`18_extension.py`, `19_reit.py`; descriptive only)
 
 - Extension (2025 list held to May 2026): High CAGR June 2005 to May 2026 13.39% against the all-included benchmark's 11.29%; High minus benchmark mean gap x12 +2.27% (t 1.47). The 2025 High list under the literal rule is small (33 names).
 - REIT substitute (che/lt for the liquidity signal): High CAGR 12.00% without it, 11.43% with it; High minus all-included benchmark mean gap x12 +1.42% to +0.88%. Adding REITs makes High slightly worse against both benchmarks.
