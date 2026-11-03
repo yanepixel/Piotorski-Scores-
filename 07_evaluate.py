@@ -1,65 +1,43 @@
 """
-Phase 6: evaluate the portfolios (CLAUDE.md sections 5, 8b and 9). Stops at Checkpoint 3.
+Stage 07: performance and tests for the portfolios (CLAUDE.md section 8f and its Clarifications, PIPELINE in config.py).
 
-Reads:  output/tables/portfolio_returns.csv, score_portfolio_returns.csv, portfolio_turnover.csv, data/raw/ff_factors.parquet
-Tables: output/tables/performance.csv, versus_benchmark.csv, factor_regressions.csv, returns_by_score.csv, year_by_year.csv, subperiods.csv
-Charts: output/charts/cumulative_returns.png, drawdowns.png, returns_by_score.png
-Report: output/checkpoint3_results.md
-Log:    output/logs/evaluate_log.md
+Usage:  python 07_evaluate.py [--rule literal|net]   (default literal, the primary rule)
+Reads:  <out>/portfolio_returns.csv, portfolio_turnover.csv, bucket_counts.csv (stage 06), data/raw/ff_factors.parquet
+Output: <out>/headline.csv, headline.md (the headline table), tests.csv, versus.csv, factor_loadings.csv, subperiods.csv, year_by_year.csv, headline_numbers.csv, report.md
+        <out> is output/core for the literal rule and output/core/net_sensitivity for the net rule.
 Exit code is 1 if a check fails.
+
+Primary tests (PIPELINE primary_tests): (1) raw annualised return of High over the primary benchmark (all included names); (2) High excess of the risk-free rate on Mkt-RF, SMB, HML, MOM,
+alpha annualised. Standard errors are Newey-West with the automatic lag floor(4 * (T / 100) ** (2 / 9)) (Bartlett kernel, statsmodels HAC, no small-sample correction); p-values and
+minimum detectable effects use a t distribution with T - k degrees of freedom. The family for Holm is these two tests times the full period and the two SUBPERIODS (six p-values).
+The six-factor alpha, the lag-12 errors and the scored-only benchmark are reported beside, never used to choose.
 """
+import argparse
 import sys
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.ticker
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from scipy import stats as st
 
 import config as cfg
 
 ROOT = Path(__file__).resolve().parent
 RAW = ROOT / "data" / "raw"
-OUTPUT = ROOT / "output"
-TABLES = OUTPUT / "tables"
-CHARTS = OUTPUT / "charts"
-
+PIPE = cfg.PIPELINE
+LABEL = cfg.UNIVERSE_LABEL
 FACTOR_COLUMNS = {"Mkt-RF": "mktrf", "SMB": "smb", "HML": "hml", "RMW": "rmw", "CMA": "cma", "MOM": "umd"}
-LONG_ONLY = ["High", "Middle", "Low", "Benchmark", "RSP", "SPY"]
-BUCKETS = ["High", "Middle", "Low", "Benchmark"]
-INK, MUTED, GRID, AXIS, SURFACE = "#1a1a19", "#6b6a65", "#e6e5e0", "#c9c8c2", "#fcfcfb"
-SERIES_COLORS = {"High": "#2a78d6", "Low": "#eb6834", "Benchmark": "#1baf7a"}
-SERIES_NAMES = {"High": f"High (scores {cfg.HIGH_SCORES[0]}-{cfg.HIGH_SCORES[-1]})", "Low": f"Low (scores {cfg.LOW_SCORES[0]}-{cfg.LOW_SCORES[-1]})", "Benchmark": "Benchmark (all scored names)"}
-
-# v1 TEXT, superseded. The figures below come from audit simulations (verification/data_audit_phase4_6.md) whose scripts are not part of this repository, so no script here reproduces them;
-# they are quoted history, not computed output. The v3 write-up (21_v3_writeup.py) does not use them.
-SUBPERIOD_CONTEXT = ("High's alpha for June 2015 to December 2025 was -3.8% a year, t -4.10 with the pre-set 12 lags (-2.47 without adjustment; -3.06 with 4 lags). "
-                     "In simulations, 12 lags on 127 months overstate significance somewhat, implying a t nearer -3.4 to -4.0. Randomly chosen portfolios from the same universe also averaged -1.3%, "
-                     "and 19% of them reached |t| of 2 or more. The alpha falls in the lowest 1.5% of random selections, but the lowest 11% if the random selections keep High's sector mix. "
-                     "The full-period alpha is -0.8%, t -0.71, and 2005-15 has the opposite sign.")
-
-GLOSSARY = f"""## Terms
-
-- **F-score:** a 0-9 count of financial-health tests a company passes, from its latest annual report.
-- **Net / gross:** after / before trading costs ({cfg.TRANSACTION_COST_BPS} bps, or {cfg.TRANSACTION_COST_BPS / 100:.2f}%, on each dollar traded at each rebalance).
-- **Benchmark:** every scored company in the universe, equally weighted, run the same way and charged the same costs.
-- **CAGR:** the constant yearly growth rate that gives the same end value.
-- **Volatility:** how much monthly returns swing, stated per year.
-- **Sharpe ratio:** return above the risk-free rate per unit of volatility. Higher is better.
-- **Max drawdown:** the largest peak-to-trough fall.
-- **Turnover:** the share of the portfolio traded at a rebalance. Two-way counts buys and sells; one-way is half that.
-- **Excess return:** return above the benchmark, here the average monthly gap times 12.
-- **Tracking error:** how much the return gap to the benchmark swings, per year.
-- **Information ratio:** excess return divided by tracking error.
-- **Factor:** a broad return pattern. Mkt-RF is the market above cash, SMB small vs large companies, HML cheap vs expensive, RMW profitable vs unprofitable, CMA low vs high asset growth, MOM recent winners vs losers.
-- **Alpha:** return left after accounting for those factors, stated per year.
-- **t-stat:** how many standard errors a number is from zero. Beyond {cfg.SIGNIFICANCE_T_STAT:.0f} in either direction is treated as significant here.
-- **Newey-West:** standard errors adjusted for returns that are correlated over time, here over {cfg.NEWEY_WEST_LAGS} months.
-- **Spread:** High minus Low. A diagnostic only, with no shorting costs.
-"""
+F4 = ["Mkt-RF", "SMB", "HML", "MOM"]
+F6 = cfg.FACTOR_MODEL
+LONG_ONLY = ["High", "Middle", "Low", "Benchmark", "BenchmarkScored", "RSP", "SPY"]
+CHARGED = ["High", "Middle", "Low", "Benchmark", "BenchmarkScored"]
+ALPHA, POWER = PIPE["alpha_level"], PIPE["power_level"]   # size and power of the minimum-detectable-effect calculation (PIPELINE)
+LAG_A, LAG_B = PIPE["sensitivity_lags"]                # the two extra lag counts reported beside the automatic lag (PIPELINE)
+# PIPELINE keys that name the one behaviour implemented below: stop if the config says otherwise
+assert PIPE["hac_lag_rule"] == "hac_lag_formula_floor_4_T_over_100_pow_2_9" and PIPE["small_sample"] == "t_distribution_T_minus_k", "HAC lag rule or small-sample rule differs from the code"
+assert PIPE["multiple_testing"] == "holm_over_prespecified_family" and PIPE["primary_tests"] == ["raw_excess_vs_primary_benchmark", "mkt_smb_hml_mom"], "test family differs from the code"
+assert PIPE["primary_benchmark"] == "equal_weight_all_included" and PIPE["report_power"] is True, "benchmark or power reporting differs from the code"
 
 
 def md_table(df, digits=None):
@@ -72,250 +50,235 @@ def md_table(df, digits=None):
     return head + "\n".join("| " + " | ".join("" if pd.isna(v) else str(v) for v in row) + " |" for row in d.itertuples(index=False)) + "\n"
 
 
+def auto_lag(T):
+    return int(np.floor(4 * (T / 100) ** (2 / 9)))
+
+
 def cagr(r):
     return (1 + r).prod() ** (12 / len(r)) - 1
 
 
-def max_drawdown(r):
-    return drawdown_series(r).min()
-
-
-def drawdown_series(r):
+def drawdown_min(r):
     wealth = (1 + r).cumprod()
     peak = pd.concat([pd.Series([1.0]), wealth]).cummax().iloc[1:]
-    return pd.Series(wealth.values / peak.values - 1, index=r.index)
+    return float((wealth.values / peak.values - 1).min())
 
 
-def stats(r, rf):
-    excess = r - rf
-    return {"months": len(r), "CAGR": cagr(r), "volatility": r.std() * 12 ** 0.5, "sharpe": excess.mean() * 12 / (excess.std() * 12 ** 0.5), "max_drawdown": max_drawdown(r)}
+def perf_stats(r, rf):
+    ex = r - rf
+    return {"months": len(r), "CAGR": cagr(r), "volatility": r.std() * 12 ** 0.5, "sharpe": ex.mean() * 12 / (ex.std() * 12 ** 0.5), "max_drawdown": drawdown_min(r)}
 
 
-def regress(y, factors, cols):
-    x = sm.add_constant(factors[cols].astype(float))
-    fit = sm.OLS(y.astype(float), x).fit(cov_type="HAC", cov_kwds={"maxlags": cfg.NEWEY_WEST_LAGS})
-    row = {"months": int(fit.nobs), "alpha_annual": fit.params["const"] * 12, "alpha_t": fit.tvalues["const"], "r_squared": fit.rsquared}
-    for name in cfg.FACTOR_MODEL:
-        row[f"beta_{name}"] = fit.params[FACTOR_COLUMNS[name]]
-        row[f"t_{name}"] = fit.tvalues[FACTOR_COLUMNS[name]]
-    return row
+def fit(y, x, lags, correction=False):
+    """OLS with Newey-West errors; returns the constant's estimate, standard error, t, two-sided p on T - k degrees of freedom, and the full fit.
+    correction=True multiplies the covariance by T / (T - k) (statsmodels use_correction); the run as locked has no correction."""
+    X = sm.add_constant(x.astype(float)) if x is not None else pd.DataFrame({"const": np.ones(len(y))}, index=y.index)
+    f = sm.OLS(y.astype(float), X).fit(cov_type="HAC", cov_kwds={"maxlags": lags, "use_correction": correction})
+    df = int(f.nobs) - X.shape[1]
+    t = f.params["const"] / f.bse["const"]
+    return {"est": f.params["const"], "se": f.bse["const"], "t": t, "p": 2 * st.t.sf(abs(t), df), "df": df, "fit": f}
 
 
-def style(ax):
-    ax.set_facecolor(SURFACE)
-    ax.tick_params(colors=MUTED, length=0)
-    ax.yaxis.grid(True, color=GRID, linewidth=0.8)
-    ax.set_axisbelow(True)
-    for side in ["top", "right", "left"]:
-        ax.spines[side].set_visible(False)
-    ax.spines["bottom"].set_color(AXIS)
+def mde(se, df):
+    return (st.t.ppf(1 - ALPHA / 2, df) + st.t.ppf(POWER, df)) * se
 
 
-def titles(fig, title, note):
-    fig.text(0.02, 0.97, title, fontsize=13, fontweight="bold", color=INK, va="top")
-    fig.text(0.02, 0.91, f"{note}\n{cfg.UNIVERSE_LABEL}", fontsize=8, color=MUTED, va="top")
-    fig.tight_layout(rect=(0, 0, 1, 0.82))
-
-
-def line_chart(series, path, title, note, ylabel, log=False, fmt=None):
-    fig, ax = plt.subplots(figsize=(9, 5), dpi=150, facecolor=SURFACE)
-    style(ax)
-    dates = series.index.to_timestamp("M")
-    for name in ["High", "Benchmark", "Low"]:
-        ax.plot(dates, series[name], color=SERIES_COLORS[name], linewidth=2, label=SERIES_NAMES[name], solid_capstyle="round")
-    if log:
-        ax.set_yscale("log", base=2)
-        ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-    if fmt:
-        ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(fmt))
-    ax.set_ylabel(ylabel, color=MUTED)
-    ax.legend(frameon=False, loc="upper left" if log else "lower right", fontsize=8, labelcolor=INK)
-    titles(fig, title, note)
-    fig.savefig(path, facecolor=SURFACE)
-    plt.close(fig)
+def holm(p):
+    order = np.argsort(p)
+    m = len(p)
+    adj = np.empty(m)
+    run = 0.0
+    for rank, i in enumerate(order):
+        run = max(run, (m - rank) * p[i])
+        adj[i] = min(1.0, run)
+    return adj
 
 
 def main():
-    CHARTS.mkdir(parents=True, exist_ok=True)
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--rule", choices=["literal", "net"], default="literal")
+    rule = ap.parse_args().rule
+    sub = "" if rule == "literal" else "net_sensitivity"
+    out = ROOT / PIPE["output_dir"] / sub
     failures = []
+    kind = "literal issuance rule (primary)" if rule == "literal" else "net issuance rule (sensitivity)"
 
-    p = pd.read_csv(TABLES / "portfolio_returns.csv", parse_dates=["formation_date"])
+    p = pd.read_csv(out / "portfolio_returns.csv", parse_dates=["formation_date"])
     p.index = pd.PeriodIndex(p.month, freq="M")
-    s = pd.read_csv(TABLES / "score_portfolio_returns.csv", parse_dates=["formation_date"])
-    t = pd.read_csv(TABLES / "portfolio_turnover.csv", parse_dates=["formation_date"])
-
-    # Factors join on month: portfolio dates are last trading day, factor dates first of month. Cut at the last return.
+    t = pd.read_csv(out / "portfolio_turnover.csv", parse_dates=["formation_date"])
     ff = pd.read_parquet(RAW / "ff_factors.parquet")
     ff["period"] = pd.PeriodIndex(ff.month, freq="M")
     ff = ff.set_index("period").sort_index()
-    ff_full_end = ff.index.max()
     factors = ff.reindex(p.index)
-    cols = [FACTOR_COLUMNS[n] for n in cfg.FACTOR_MODEL]
+    cols = [FACTOR_COLUMNS[n] for n in F6]
     factors[cols + ["rf"]] = factors[cols + ["rf"]].astype(float)
     if factors[cols + ["rf"]].isna().any().any():
         failures.append("Missing factor values in the test period")
-    if p.index.max() != pd.Period(cfg.RETURNS_END, "M"):
-        failures.append(f"Returns end {p.index.max()}, not {cfg.RETURNS_END}")
     rf = factors.rf
+    T = len(p)
 
-    # --- Performance ---
-    perf = []
+    # --- Headline table ---
+    rows = []
     for name in LONG_ONLY:
-        row = {"portfolio": name, "basis": "net" if name in BUCKETS else "fund return", **stats(p[name], rf)}
-        if name in BUCKETS:
-            rows = t[(t.bucket == name) & (t.formation_date > t.formation_date.min())]
-            row["avg_turnover_two_way"] = rows.turnover_two_way.mean()
-            row["avg_turnover_one_way"] = rows.turnover_one_way.mean()
-            row["avg_annual_cost"] = rows.cost.mean()
-        perf.append(row)
-    for name in BUCKETS:
-        perf.append({"portfolio": name, "basis": "gross", **stats(p[f"{name}_gross"], rf)})
-    perf = pd.DataFrame(perf)
-    perf.insert(0, "universe_label", cfg.UNIVERSE_LABEL)
-    perf.to_csv(TABLES / "performance.csv", index=False)
-    spread_row = {"portfolio": "Spread", "months": len(p)}
-    for basis, col in [("net", "Spread"), ("gross", "Spread_gross")]:
-        spread_row[f"mean_annual_{basis}"] = p[col].mean() * 12
-        spread_row[f"volatility_{basis}"] = p[col].std() * 12 ** 0.5
-        spread_row[f"max_drawdown_{basis}"] = max_drawdown(p[col])
+        s = perf_stats(p[name], rf)
+        row = {"universe_label": LABEL, "portfolio": name, "months": s["months"], "CAGR": s["CAGR"], "volatility": s["volatility"], "sharpe": s["sharpe"], "max_drawdown": s["max_drawdown"]}
+        row["avg_turnover_two_way"] = t[(t.portfolio == name) & (t.formation_date > t.formation_date.min())].turnover_two_way.mean() if name in CHARGED else np.nan
+        rows.append(row)
+    head = pd.DataFrame(rows)
+    head.to_csv(out / "headline.csv", index=False)
 
-    # --- Holding years ---
-    def compound(r):
-        return (1 + r).prod() - 1
-    yr = p.groupby("formation_date").agg(months=("High", "size"), High=("High", compound), Low=("Low", compound), Middle=("Middle", compound), Benchmark=("Benchmark", compound),
-                                         High_gross=("High_gross", compound), Low_gross=("Low_gross", compound), Benchmark_gross=("Benchmark_gross", compound)).reset_index()
-    yr["Spread"] = yr.High - yr.Low
+    # --- Tests: full period and the two SUBPERIODS ---
+    periods = [("full", p.index[0], p.index[-1])] + [(f"{a} to {b}", pd.Period(a, "M"), pd.Period(b, "M")) for a, b in cfg.SUBPERIODS]
+    test_rows = []
+
+    def add(series, test, period, y, x, lags_main, extra_lag12=True):
+        r_main = fit(y, x, lags_main)
+        r12 = fit(y, x, LAG_B)
+        rc = fit(y, x, lags_main, correction=PIPE["sensitivity_small_sample_correction"])
+        r6 = fit(y, x, LAG_A)
+        test_rows.append({"lag_corr_t": rc["t"], "lag_corr_p": rc["p"], f"lag{LAG_A}_t": r6["t"], f"lag{LAG_A}_p": r6["p"], "universe_label": LABEL, "series": series, "test": test, "period": period, "months": len(y), "hac_lags": lags_main, "estimate_annual": r_main["est"] * 12,
+                          "se_annual": r_main["se"] * 12, "t": r_main["t"], "p_value": r_main["p"], "df": r_main["df"], "mde_80pct_power_annual": mde(r_main["se"], r_main["df"]) * 12,
+                          f"lag{LAG_B}_t": r12["t"], f"lag{LAG_B}_p": r12["p"], "r_squared": r_main["fit"].rsquared if x is not None else np.nan})
+        return r_main
+
+    for label, a, b in periods:
+        w = p.loc[a:b]
+        fw, rw = factors.loc[w.index], rf.loc[w.index]
+        L = auto_lag(len(w))
+        add("High", "raw excess vs primary benchmark (all included)", label, w.High - w.Benchmark, None, L)
+        add("High", "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)", label, w.High - rw, fw[[FACTOR_COLUMNS[n] for n in F4]], L)
+        add("High", "raw excess vs scored-only benchmark (sensitivity)", label, w.High - w.BenchmarkScored, None, L)
+        add("High", "alpha, six factors (secondary)", label, w.High - rw, fw[cols], L)
+        for nm in ["Middle", "Low"]:
+            add(nm, "raw excess vs primary benchmark (all included)", label, w[nm] - w.Benchmark, None, L)
+            add(nm, "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)", label, w[nm] - rw, fw[[FACTOR_COLUMNS[n] for n in F4]], L)
+            add(nm, "raw excess vs scored-only benchmark (sensitivity)", label, w[nm] - w.BenchmarkScored, None, L)
+            add(nm, "alpha, six factors (secondary)", label, w[nm] - rw, fw[cols], L)
+        add("Spread (High minus Low)", "raw mean, net (diagnostic)", label, w.Spread, None, L)
+        add("Spread (High minus Low)", "alpha, Mkt-RF+SMB+HML+MOM", label, w.Spread, fw[[FACTOR_COLUMNS[n] for n in F4]], L)
+        add("Spread (High minus Low)", "alpha, six factors (secondary)", label, w.Spread, fw[cols], L)
+        add("Benchmark (primary)", "alpha, Mkt-RF+SMB+HML+MOM (context)", label, w.Benchmark - rw, fw[[FACTOR_COLUMNS[n] for n in F4]], L)
+    tests = pd.DataFrame(test_rows)
+    fam = tests[(tests.series == "High") & tests.test.isin(["raw excess vs primary benchmark (all included)", "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)"])]
+    if len(fam) != 6:
+        failures.append("Holm family does not have six p-values")
+    tests["holm_adjusted_p"] = np.nan
+    tests.loc[fam.index, "holm_adjusted_p"] = holm(fam.p_value.values)
+    tests["in_holm_family"] = tests.index.isin(fam.index)
+    # Holm within each variant, over the same six tests. The as-run column is holm_adjusted_p; the variants are reported beside, never used to choose.
+    for col, name in [("lag_corr_p", "holm_p_lag_corrected"), (f"lag{LAG_A}_p", f"holm_p_lag{LAG_A}"), (f"lag{LAG_B}_p", f"holm_p_lag{LAG_B}")]:
+        tests[name] = np.nan
+        tests.loc[fam.index, name] = holm(tests.loc[fam.index, col].values)
+    tests.to_csv(out / "tests.csv", index=False)
+
+    # --- Gap to each benchmark: excess, tracking error, information ratio (full period) ---
+    vs_rows = []
+    for nm in ["High", "Middle", "Low", "Benchmark", "BenchmarkScored", "RSP", "SPY"]:
+        for base in ["Benchmark", "BenchmarkScored"]:
+            if nm == base:
+                continue
+            d = p[nm] - p[base]
+            te = d.std() * 12 ** 0.5
+            vs_rows.append({"universe_label": LABEL, "portfolio": nm, "versus": base, "excess_return_annual": d.mean() * 12, "cagr_difference": cagr(p[nm]) - cagr(p[base]), "tracking_error": te, "information_ratio": d.mean() * 12 / te})
+    pd.DataFrame(vs_rows).to_csv(out / "versus.csv", index=False)
+    # --- Factor loadings, full period (OLS point estimates with the as-run Newey-West t) ---
+    load_rows = []
+    for nm, y in [("High excess of rf", p.High - rf), ("Spread (High minus Low)", p.Spread)]:
+        for model, fl in [("4-factor", F4), ("6-factor", F6)]:
+            fc = [FACTOR_COLUMNS[n] for n in fl]
+            r_ = fit(y, factors[fc], auto_lag(T))["fit"]
+            row = {"universe_label": LABEL, "series": nm, "model": model, "alpha_annual": r_.params["const"] * 12, "alpha_t": r_.tvalues["const"], "r_squared": r_.rsquared}
+            for n in fl:
+                row[f"beta_{n}"] = r_.params[FACTOR_COLUMNS[n]]
+            load_rows.append(row)
+    pd.DataFrame(load_rows).to_csv(out / "factor_loadings.csv", index=False)
+
+    # --- Subperiod performance ---
+    subs = []
+    for label, a, b in periods[1:]:
+        w = p.loc[a:b]
+        rw = rf.loc[w.index]
+        d = {"universe_label": LABEL, "period": label, "months": len(w)}
+        for nm in ["High", "Middle", "Low", "Benchmark", "BenchmarkScored"]:
+            s = perf_stats(w[nm], rw)
+            d.update({f"{nm}_CAGR": s["CAGR"], f"{nm}_sharpe": s["sharpe"]})
+        d["High_minus_Benchmark_annual"] = (w.High - w.Benchmark).mean() * 12
+        d["Spread_annual"] = w.Spread.mean() * 12
+        subs.append(d)
+    subs = pd.DataFrame(subs)
+    if subs.months.sum() != T:
+        failures.append("Subperiods do not cover every month once")
+    subs.to_csv(out / "subperiods.csv", index=False)
+
+    # --- Holding years, hit rate on complete years ---
+    comp = lambda r: (1 + r).prod() - 1
+    yr = p.groupby("formation_date").agg(months=("High", "size"), High=("High", comp), Middle=("Middle", comp), Low=("Low", comp), Benchmark=("Benchmark", comp), BenchmarkScored=("BenchmarkScored", comp)).reset_index()
+    yr["holding_year"] = [f"{d.year}-{str(d.year + 1)[2:]}" if m == cfg.HOLDING_MONTHS else f"{d.year} partial ({m} of {cfg.HOLDING_MONTHS} months)" for d, m in zip(yr.formation_date, yr.months)]
     yr["High_minus_Benchmark"] = yr.High - yr.Benchmark
     yr["High_beats_Benchmark"] = yr.High > yr.Benchmark
-    yr["holding_year"] = [f"{d.year}-{str(d.year + 1)[2:]}" if m == cfg.HOLDING_MONTHS else f"{d.year} partial ({m} of {cfg.HOLDING_MONTHS} months)" for d, m in zip(yr.formation_date, yr.months)]
-    counts = t.pivot(index="formation_date", columns="bucket", values="names").reset_index()
-    yr = yr.merge(counts[["formation_date", "High", "Low"]].rename(columns={"High": "High_names", "Low": "Low_names"}), on="formation_date")
-    complete = yr[yr.months == cfg.HOLDING_MONTHS]
-    partial = yr[yr.months < cfg.HOLDING_MONTHS]
-    hit_set = complete if cfg.HIT_RATE_COMPLETE_YEARS_ONLY else yr
-    hit = hit_set.High_beats_Benchmark.mean()
-    out = yr[["holding_year", "months", "High_names", "Low_names", "High", "Low", "Spread", "Benchmark", "High_minus_Benchmark", "High_beats_Benchmark"]].copy()
-    out.insert(0, "universe_label", cfg.UNIVERSE_LABEL)
-    out.to_csv(TABLES / "year_by_year.csv", index=False)
+    yr["High_beats_BenchmarkScored"] = yr.High > yr.BenchmarkScored
+    yr["Spread"] = yr.High - yr.Low
+    cnt = pd.read_csv(out / "bucket_counts.csv", parse_dates=["formation_date"]).pivot(index="formation_date", columns="portfolio", values="names").reset_index()
+    yr = yr.merge(cnt[["formation_date", "High", "Low"]].rename(columns={"High": "High_names", "Low": "Low_names"}), on="formation_date")
+    done = yr[yr.months == cfg.HOLDING_MONTHS]
+    hit, hit_scored = done.High_beats_Benchmark.mean(), done.High_beats_BenchmarkScored.mean()
+    yr.insert(0, "universe_label", LABEL)
+    yr.to_csv(out / "year_by_year.csv", index=False)
 
-    # --- Versus the primary benchmark ---
-    vs = []
-    for name, col, base in [("High", "High", "Benchmark"), ("Middle", "Middle", "Benchmark"), ("Low", "Low", "Benchmark"), ("High, gross", "High_gross", "Benchmark_gross"), ("RSP", "RSP", "Benchmark"), ("SPY", "SPY", "Benchmark")]:
-        diff = p[col] - p[base]
-        te = diff.std() * 12 ** 0.5
-        vs.append({"portfolio": name, "versus": base, "excess_return_annual": diff.mean() * 12, "cagr_difference": cagr(p[col]) - cagr(p[base]), "tracking_error": te, "information_ratio": diff.mean() * 12 / te,
-                   "excess_t_newey_west": sm.OLS(diff.astype(float), np.ones(len(diff))).fit(cov_type="HAC", cov_kwds={"maxlags": cfg.NEWEY_WEST_LAGS}).tvalues.iloc[0]})
-    vs = pd.DataFrame(vs)
-    vs.insert(0, "universe_label", cfg.UNIVERSE_LABEL)
-    vs.to_csv(TABLES / "versus_benchmark.csv", index=False)
-
-    # --- Factor regressions ---
-    specs = [("High excess of risk-free", "net", p.High - rf), ("High excess of risk-free", "gross", p.High_gross - rf),
-             ("Spread (High minus Low)", "net", p.Spread), ("Spread (High minus Low)", "gross", p.Spread_gross),
-             ("High minus Benchmark (added)", "net", p.High - p.Benchmark), ("Low excess of risk-free (added)", "net", p.Low - rf), ("Benchmark excess of risk-free (added)", "net", p.Benchmark - rf)]
-    regs = [{"series": n, "basis": b, **regress(y, factors, cols)} for n, b, y in specs]
-    regs = pd.DataFrame(regs)
-    regs.insert(0, "universe_label", cfg.UNIVERSE_LABEL)
-    regs.to_csv(TABLES / "factor_regressions.csv", index=False)
-    if (regs.months != len(p)).any():
-        failures.append("A regression does not use every month")
-
-    # --- Subperiods ---
-    subs = []
-    for a, b in cfg.SUBPERIODS:
-        w = p.loc[pd.Period(a, "M"):pd.Period(b, "M")]
-        fw, rw = factors.loc[w.index], rf.loc[w.index]
-        high, bench, low = stats(w.High, rw), stats(w.Benchmark, rw), stats(w.Low, rw)
-        diff = w.High - w.Benchmark
-        rh, rs = regress(w.High - rw, fw, cols), regress(w.Spread, fw, cols)
-        subs.append({"period": f"{a} to {b}", "months": len(w), "High_CAGR": high["CAGR"], "Low_CAGR": low["CAGR"], "Benchmark_CAGR": bench["CAGR"], "High_sharpe": high["sharpe"], "Benchmark_sharpe": bench["sharpe"],
-                     "High_excess_annual": diff.mean() * 12, "information_ratio": diff.mean() * 12 / (diff.std() * 12 ** 0.5), "Spread_annual": w.Spread.mean() * 12,
-                     "High_alpha_annual": rh["alpha_annual"], "High_alpha_t": rh["alpha_t"], "Spread_alpha_annual": rs["alpha_annual"], "Spread_alpha_t": rs["alpha_t"]})
-    subs = pd.DataFrame(subs)
-    if subs.months.sum() != len(p):
-        failures.append("Subperiods do not cover every month once")
-    subs.insert(0, "universe_label", cfg.UNIVERSE_LABEL)
-    subs.to_csv(TABLES / "subperiods.csv", index=False)
-
-    # --- Monotonicity, gross, complete holding years ---
-    sy = s.groupby(["formation_date", "F_SCORE", "partial_period"]).agg(ret=("gross", lambda r: (1 + r.dropna()).prod() - 1), names=("names_at_formation", "first")).reset_index()
-    done = sy[~sy.partial_period]
-    mono = done.groupby("F_SCORE").agg(avg_annual_return=("ret", "mean"), complete_years=("ret", "size"), avg_names=("names", "mean")).reindex(range(0, 10)).reset_index()
-    pr = sy[sy.partial_period].set_index("F_SCORE").ret.rename("partial_2025_return")
-    mono = mono.merge(pr, on="F_SCORE", how="left")
-    mono["under_minimum_names"] = mono.avg_names < cfg.MIN_BUCKET_NAMES
-    ordered = mono.dropna(subset=["avg_annual_return"])
-    rank_corr = ordered.avg_annual_return.rank().corr(ordered.F_SCORE.rank())
-    mono.insert(0, "universe_label", cfg.UNIVERSE_LABEL)
-    mono.to_csv(TABLES / "returns_by_score.csv", index=False)
-
-    # --- Charts ---
-    pct = lambda v, _: f"{v:.0%}"
-    usd = lambda v, _: f"${v:g}"
-    wealth = pd.DataFrame({n: (1 + p[n]).cumprod() for n in SERIES_COLORS})
-    period_note = f"Net of costs, {p.month.iloc[0]} to {p.month.iloc[-1]}. The last portfolio is partial (7 of 12 months)."
-    line_chart(wealth, CHARTS / "cumulative_returns.png", "Growth of $1, log scale", period_note, "Value of $1 (log scale)", log=True, fmt=usd)
-    dd = pd.DataFrame({n: drawdown_series(p[n]) for n in SERIES_COLORS})
-    line_chart(dd, CHARTS / "drawdowns.png", "Drawdowns", period_note, "Fall from prior peak", fmt=pct)
-    fig, ax = plt.subplots(figsize=(9, 5), dpi=150, facecolor=SURFACE)
-    style(ax)
-    shown = mono.dropna(subset=["avg_annual_return"])
-    ax.bar(shown.F_SCORE, shown.avg_annual_return, width=0.82, color=SERIES_COLORS["High"])
-    ax.axhline(0, color=AXIS, linewidth=1)
-    for r in shown.itertuples():
-        ax.annotate(f"{int(r.complete_years)} yrs\n{r.avg_names:.0f} names", (r.F_SCORE, max(r.avg_annual_return, 0)), ha="center", va="bottom", xytext=(0, 3), textcoords="offset points", color=MUTED, fontsize=7)
-    ax.set_xticks(range(0, 10))
-    ax.set_xlabel("F-score (0 to 9)", color=MUTED)
-    ax.set_ylabel("Average annual return", color=MUTED)
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(pct))
-    ax.margins(y=0.15)
-    titles(fig, "Average annual return by F-score", "Gross of costs, complete June-May holding years. Scores with few names or years are unreliable; see labels.")
-    fig.savefig(CHARTS / "returns_by_score.png", facecolor=SURFACE)
-    plt.close(fig)
+    # --- headline numbers: one row per key number, for the number-check script ---
+    full = tests[tests.period == "full"].set_index(["series", "test"])
+    key = {}
+    for nm in ["High", "Middle", "Low", "Benchmark", "BenchmarkScored"]:
+        r = head.set_index("portfolio").loc[nm]
+        key.update({f"{nm}_CAGR": r.CAGR, f"{nm}_volatility": r.volatility, f"{nm}_sharpe": r.sharpe, f"{nm}_max_drawdown": r.max_drawdown})
+    ex = full.loc[("High", "raw excess vs primary benchmark (all included)")]
+    al = full.loc[("High", "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)")]
+    key.update({"High_excess_vs_primary_annual": ex.estimate_annual, "High_excess_t": ex.t, "High_excess_p": ex.p_value, "High_excess_holm_p": ex.holm_adjusted_p, "High_excess_mde": ex.mde_80pct_power_annual,
+                "High_alpha4_annual": al.estimate_annual, "High_alpha4_t": al.t, "High_alpha4_p": al.p_value, "High_alpha4_holm_p": al.holm_adjusted_p, "High_alpha4_mde": al.mde_80pct_power_annual,
+                "hac_lags_full": auto_lag(T), "months": T, "hit_rate_complete_years_primary": hit, "hit_rate_complete_years_scored_only": hit_scored, "complete_years": len(done)})
+    pd.DataFrame({"universe_label": LABEL, "metric": list(key), "value": list(key.values())}).to_csv(out / "headline_numbers.csv", index=False)
 
     # --- Report ---
-    h = regs[(regs.series.str.startswith("High excess")) & (regs.basis == "net")].iloc[0]
-    sp = regs[(regs.series.str.startswith("Spread")) & (regs.basis == "net")].iloc[0]
-    hb = regs[regs.series.str.startswith("High minus")].iloc[0]
-    significant = [n for n, v in [("High", h.alpha_t), ("Spread", sp.alpha_t), ("High minus Benchmark", hb.alpha_t)] if abs(v) >= cfg.SIGNIFICANCE_T_STAT]
-    sub_sig = subs[(subs.High_alpha_t.abs() >= cfg.SIGNIFICANCE_T_STAT) | (subs.Spread_alpha_t.abs() >= cfg.SIGNIFICANCE_T_STAT)]
-    L = [f"# Checkpoint 3 results: {cfg.UNIVERSE_LABEL}\n", "## Checks\n", f"**{len(failures)} check failure(s).** {len(p)} months, {p.month.iloc[0]} to {p.month.iloc[-1]}. Factors available to {ff_full_end}, cut to the last return month and joined on month.\n",
-         f"**Significance at |t| = {cfg.SIGNIFICANCE_T_STAT:.0f}.** Full period: {significant or 'none'}. Subperiods: {', '.join(sub_sig.period) or 'none'}, one High alpha. Read it with the context below.\n",
-         f"> {SUBPERIOD_CONTEXT}\n"]
-    L += [f"- FAIL: {x}" for x in failures] + [""]
-    L.append(GLOSSARY)
-    L.append("\n## Performance (returns are net of costs unless marked gross; RSP and SPY are fund returns)\n")
-    L.append(md_table(perf.drop(columns="universe_label"), 4))
-    L.append(f"\nSpread: {spread_row['mean_annual_net']:.2%} a year net, {spread_row['mean_annual_gross']:.2%} gross, volatility {spread_row['volatility_net']:.2%}, largest drawdown {spread_row['max_drawdown_net']:.2%}.\n")
-    L.append(f"\nHigh beat the Benchmark in {int(hit_set.High_beats_Benchmark.sum())} of {len(hit_set)} complete holding years = {hit:.0%}. {partial.holding_year.iloc[0]}: {'beat' if partial.High_beats_Benchmark.iloc[0] else 'trailed'}, shown separately.\n")
-    L.append("\n## Versus the Benchmark\n")
-    L.append(md_table(vs.drop(columns="universe_label"), 4))
-    L.append(f"\n## Factor regressions ({', '.join(cfg.FACTOR_MODEL)}; Newey-West, {cfg.NEWEY_WEST_LAGS} lags)\n")
-    L.append(md_table(regs.drop(columns="universe_label"), 3))
-    L.append("\nThe rows marked (added) go beyond the brief, for context.\n")
-    L.append("\n## Returns by individual score (gross, complete years)\n")
-    L.append(md_table(mono.drop(columns="universe_label"), 4))
-    thin = mono[mono.under_minimum_names].F_SCORE.tolist()
-    well = ordered[~ordered.under_minimum_names]
-    L.append(f"\nRank correlation of score with average return: {rank_corr:+.2f}, across {len(ordered)} scores. **Treat this with caution:** it includes scores {thin}, which average under {cfg.MIN_BUCKET_NAMES} names, and score 0 has a single name in a single year. "
-             f"It is {well.avg_annual_return.rank().corr(well.F_SCORE.rank()):+.2f} across the {len(well)} scores with enough names, and neither figure is a test of significance.\n")
-    L.append("\n## Year by year (net)\n")
-    L.append(md_table(out.drop(columns="universe_label"), 4))
+    L = [f"# Results, {kind}: {LABEL}\n", f"**{len(failures)} check failure(s).** {T} months, {p.month.iloc[0]} to {p.month.iloc[-1]}; last portfolio partial (7 of 12 months). Returns are net of costs; RSP and SPY are fund returns. "
+         f"Primary benchmark = every included name, equal weight, charged like the buckets; BenchmarkScored = scored names only (the like-for-like benchmark).\n"] + [f"- FAIL: {x}" for x in failures] + [""]
+    fcov = pd.read_parquet(ROOT / "data" / "clean" / "core" / sub / "formation.parquet", columns=["formation_date", "permco", "scored", "bucket"])
+    L.append(f"**Coverage.** {len(fcov)} included list rows from {fcov.permco.nunique()} unique companies on {fcov.formation_date.nunique()} formation dates ({fcov.formation_date.min().date()} to {fcov.formation_date.max().date()}); "
+             f"{int(fcov.scored.sum())} scored list rows from {fcov[fcov.scored].permco.nunique()} unique companies. Unique companies by bucket: {', '.join(f'{b} ' + str(fcov[fcov.bucket == b].permco.nunique()) for b in ['High', 'Middle', 'Low'])}. "
+             f"Monthly returns {p.month.iloc[0]} to {p.month.iloc[-1]} ({T} months). No rows are dropped by this script.\n")
+    L.append("## Headline\n")
+    L.append(md_table(head.drop(columns="universe_label"), 4))
+    L.append(f"## Primary tests, High, full period (Newey-West, automatic lag {auto_lag(T)}; t distribution, T - k df; annualised)\n")
+    prim = tests[(tests.series == "High") & tests.test.isin(["raw excess vs primary benchmark (all included)", "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)"])]
+    L.append(md_table(prim.drop(columns=["universe_label", "series", "in_holm_family", "r_squared"]), 4))
+    L.append("\nHolm adjustment is over these six p-values (two tests x full period and the two subperiods). `mde_80pct_power_annual` is the smallest true effect detectable with 80% power at 5% two-sided, given this sample's standard error.\n")
+    sens = tests[tests.in_holm_family].copy()
+    sens["test"] = sens.test.map({"raw excess vs primary benchmark (all included)": "raw excess", "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)": "4-factor alpha"})
+    sens_cols = sens[["test", "period", "estimate_annual", "t", "p_value", "holm_adjusted_p", "lag_corr_t", "lag_corr_p", "holm_p_lag_corrected", f"lag{LAG_A}_t", f"lag{LAG_A}_p", f"holm_p_lag{LAG_A}", f"lag{LAG_B}_t", f"lag{LAG_B}_p", f"holm_p_lag{LAG_B}"]]
+    sens_cols = sens_cols.rename(columns={"t": "t_as_run", "p_value": "p_as_run", "holm_adjusted_p": "holm_as_run"})
+    L.append("## Sensitivity of the primary tests to the standard-error convention\n")
+    L.append(f"Every primary test, High, under four conventions: as run (Newey-West, automatic lag floor(4 * (T / 100) ** (2 / 9)) = {auto_lag(T)} for the full period, no small-sample correction; the convention PIPELINE locks), the same lag {auto_lag(T)} "
+             f"with the covariance multiplied by T / (T - k), lag {LAG_A}, and lag {LAG_B}. p-values use t with T - k degrees of freedom. Holm is over the same six tests within each convention. Reported beside; none was used to choose.\n")
+    L.append(md_table(sens_cols, 4))
+    reject = []
+    for col, lab in [("holm_adjusted_p", "as run"), ("holm_p_lag_corrected", f"lag {auto_lag(T)} with the T / (T - k) correction"), (f"holm_p_lag{LAG_A}", f"lag {LAG_A}"), (f"holm_p_lag{LAG_B}", f"lag {LAG_B}")]:
+        hits = [f"{r.test} {r.period}" for r in sens.itertuples() if getattr(r, col) < ALPHA]
+        reject.append(f"- {lab}: {', '.join(hits) if hits else 'none'}")
+    L.append("\nTests rejecting at 5% after Holm adjustment, by convention:\n")
+    L += reject
+    a = sens[(sens.test == "4-factor alpha") & (sens.period == periods[2][0])].iloc[0]
+    L.append("\nThe lag rule used is the formula floor(4 * (T / 100) ** (2 / 9)), which is what PIPELINE locks. It is not the data-dependent Newey-West (1994) bandwidth, which is unstable at T = 127 (one independent check found it picking a lag near 59 there). "
+             f"Read plainly: this family of six (two tests, full period and two periods split after results were seen) is post-hoc and exploratory, not the project's primary inference family (see 09_inference.py). "
+             f"For the {periods[2][0]} four-factor alpha, Holm p is {a.holm_adjusted_p:.3f} as run, {a.holm_p_lag_corrected:.3f} with the T / (T - k) correction, {getattr(a, f'holm_p_lag{LAG_A}'):.3f} at lag {LAG_A} and {getattr(a, f'holm_p_lag{LAG_B}'):.4f} at lag {LAG_B}. "
+             f"Tests rejecting at 5% as run: {', '.join(f'{r.test} {r.period}' for r in sens.itertuples() if r.holm_adjusted_p < ALPHA) or 'none'}.\n")
+    L.append("## All tests\n")
+    L.append(md_table(tests.drop(columns=["universe_label", "in_holm_family"]), 4))
     L.append("\n## Subperiods (net)\n")
-    L.append(md_table(subs.drop(columns="universe_label"), 3))
-    L.append(f"\nSubperiods with an alpha at or beyond |t| = {cfg.SIGNIFICANCE_T_STAT:.0f}: {', '.join(sub_sig.period) or 'none'}. {SUBPERIOD_CONTEXT}\n")
-    (OUTPUT / "checkpoint3_results.md").write_text("\n".join(L), encoding="utf-8")
-
-    fm = pd.read_parquet(ROOT / "data" / "clean" / "formation.parquet", columns=["formation_date", "permco", "scored"])
-    held = fm[fm.scored]
-    log = [f"# Phase 6 log: {cfg.UNIVERSE_LABEL}\n", f"{len(failures)} check failure(s).\n",
-           f"- Months evaluated: {len(p)}, {p.month.iloc[0]} to {p.month.iloc[-1]}. Regression months: {int(regs.months.min())} to {int(regs.months.max())}.",
-           f"- Portfolios cover {len(held)} held company-dates, {held.permco.nunique()} unique companies, on {held.formation_date.nunique()} formation dates.",
-           f"- Rows dropped by this script: 0. It reads the finished monthly series; drops are in `formation_checks.md` and `portfolio_checks.md`.",
-           f"- Factor months available to {ff_full_end}, used to {p.month.iloc[-1]}.\n"]
-    (OUTPUT / "logs" / "evaluate_log.md").write_text("\n".join(log), encoding="utf-8")
-
-    print(f"months={len(p)} failures={len(failures)} significant={significant}")
+    L.append(md_table(subs.drop(columns="universe_label"), 4))
+    L.append(f"\n## Holding years\n\nHigh beat the primary benchmark in {int(done.High_beats_Benchmark.sum())} of {len(done)} complete holding years = {hit:.0%}; beat the scored-only benchmark in {int(done.High_beats_BenchmarkScored.sum())} of {len(done)} = {hit_scored:.0%}. The partial year is shown separately.\n")
+    L.append(md_table(yr.drop(columns=["universe_label", "formation_date"]), 4))
+    (out / "report.md").write_text("\n".join(L), encoding="utf-8")
+    (out / "headline.md").write_text(f"# Headline: {LABEL}\n\n{kind}\n\n" + md_table(head.drop(columns="universe_label"), 4), encoding="utf-8")
+    print(f"rule={rule} months={T} lags={auto_lag(T)} failures={len(failures)}")
     for x in failures:
         print("FAIL:", x)
     sys.exit(1 if failures else 0)

@@ -1,5 +1,5 @@
 """
-Unit tests for the nine signals on one synthetic firm with hand-worked numbers (prereg_v3 section I).
+Unit tests for the nine signals on one synthetic firm with hand-worked numbers (prereg_main section I).
 Run from the project folder:  python -m pytest tests -q   (or: python tests/test_signals.py)
 
 Firm A, scored year FY2003 (hand-worked):
@@ -54,23 +54,23 @@ def firm(**over):
 
 def scores(mod, df, rule="literal"):
     mod.RULE = rule
-    out = mod.compute_scores_v2(df)
+    out = mod.compute_scores(df)
     return out[out.fyear == 2013].iloc[0]
 
 
-def V2():
-    return load(ROOT / "12b_spec_v2_scores.py", "v2_scores")
+def Scores():
+    return load(ROOT / "05_scores.py", "scores")
 
 
 def test_all_pass_scores_nine():
-    r = scores(V2(), firm())
+    r = scores(Scores(), firm())
     assert r.F_SCORE == 9
     assert abs(r.ROA - 12 / 110) < 1e-12 and abs(r.DROA - (12 / 110 - 0.08)) < 1e-12
     assert abs(r.LEVER - 18 / 115) < 1e-12 and abs(r.LEVER_lag1 - 20 / 105) < 1e-12
 
 
 def test_each_signal_flips_alone():
-    m = V2()
+    m = Scores()
     cases = {"F_ROA": dict(ib=-1.0, oancf=-2.0), "F_CFO": dict(oancf=-1.0), "F_DLEVER": dict(dltt=25.0), "F_DLIQUID": dict(act=40.0),
              "F_DMARGIN": dict(cogs=110.0), "F_DTURN": dict(sale=100.0, cogs=60.0), "F_EQ_OFFER": dict(sstk=5.0)}
     for sig, over in cases.items():
@@ -83,7 +83,7 @@ def test_each_signal_flips_alone():
 
 
 def test_issuance_rules():
-    m = V2()
+    m = Scores()
     assert scores(m, firm(sstk=5.0, prstkc=10.0), "literal").F_EQ_OFFER == 0   # paper: any issuance fails
     assert scores(m, firm(sstk=5.0, prstkc=10.0), "net").F_EQ_OFFER == 1       # net sensitivity: buyback exceeds issue
     assert scores(m, firm(sstk=np.nan), "literal").F_EQ_OFFER == 1             # missing sstk read as none
@@ -91,37 +91,37 @@ def test_issuance_rules():
 
 
 def test_missing_prstkc_is_unknown_under_net_rule():
-    # prereg D: a missing prstkc must be UNKNOWN under the net rule, not zero. Not yet implemented in 12b: expected failure until it is.
-    r = scores(V2(), firm(prstkc=np.nan), "net")
-    assert pd.isna(r.F_EQ_OFFER), "net rule still treats missing prstkc as 0 (prereg D item not implemented)"
+    # prereg_main D: a missing prstkc must be UNKNOWN under the net rule, not zero.
+    r = scores(Scores(), firm(prstkc=np.nan), "net")
+    assert pd.isna(r.F_EQ_OFFER), "net rule still treats missing prstkc as 0 (prereg_main D)"
 
 
 def test_null_input_gives_null_signal_and_no_score():
-    r = scores(V2(), firm(oancf=np.nan))
+    r = scores(Scores(), firm(oancf=np.nan))
     assert pd.isna(r.F_CFO) and pd.isna(r.F_ACCRUAL) and pd.isna(r.F_SCORE)
 
 
 def test_fiscal_year_gap_blocks_comparisons():
     d = firm()
     d = d[d.fyear != 2012]                      # FY2002 missing: no prior-year pair
-    r = scores(V2(), d)
+    r = scores(Scores(), d)
     assert pd.isna(r.F_DROA) and pd.isna(r.F_DLEVER) and pd.isna(r.F_SCORE)
 
 
 def test_no_filing_date_means_unscorable():
     d = firm()
     d.loc[d.fyear == 2013, "filing_date"] = pd.NaT
-    assert pd.isna(scores(V2(), d).F_SCORE)
+    assert pd.isna(scores(Scores(), d).F_SCORE)
 
 
 def test_availability_buffer():
-    r = scores(V2(), firm())
-    assert r.avail_date_v2 == r.filing_date + pd.Timedelta(days=3)
+    r = scores(Scores(), firm())
+    assert r.avail_date_buffered == r.filing_date + pd.Timedelta(days=3)
 
 
 # ---- planted bugs: the same hand-worked checks must FAIL on a deliberately broken copy ----
 def _detects(mutate, check):
-    mod = load(ROOT / "12b_spec_v2_scores.py", "v2_bug", mutate)
+    mod = load(ROOT / "05_scores.py", "scores_bug", mutate)
     try:
         check(mod)
     except AssertionError:

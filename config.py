@@ -1,26 +1,20 @@
 """
-Piotroski F-Score Backtest â€” Top-500 S&P 500 proxy (WRDS)
+Piotroski F-Score Backtest - Top-500 S&P 500 proxy (WRDS)
 Locked rules. Do not edit after seeing results; any change = a new, labelled run.
 
-Descriptive only, not read by any script: DATA_SOURCE, UNIVERSE, UNIVERSE_BUFFER, HEADLINE_VERSION,
-LONG_SHORT_SPREAD, HEADLINE_RETURNS, PRIMARY_BENCHMARK, STANDARD_ERRORS, PROFITABILITY_SCREEN, HEADLINE_SPEC.
-NEWEY_WEST_LAGS and SIGNIFICANCE_T_STAT belong to v1; the spec_v2 scripts do not read them (see SPEC_V2).
-SPEC_V2 keys fallback_availability, primary_benchmark, hac_lag_rule, small_sample, primary_tests, multiple_testing and
-report_power each name the one behaviour the v2 code implements; scripts 12b and 14 check them with assertions and stop if
-they differ, so they are read but cannot switch a behaviour. All other SPEC_V2 keys are read and used.
-Additions after the first v2 returns (keys and comments only, no existing value changed): SPEC_V2 alpha_level, power_level,
-sensitivity_lags, sensitivity_small_sample_correction; HEADLINE_SPEC in the list above.
+PIPELINE keys fallback_availability, primary_benchmark, hac_lag_rule, small_sample, primary_tests, multiple_testing and
+report_power each name the one behaviour the code implements; scripts 05 and 07 check them with assertions and stop if
+they differ, so they are read but cannot switch a behaviour. All other PIPELINE keys are read and used.
+Keys that no script read after the consolidation (CLAUDE.md section 8i) were removed; their rules stay documented in CLAUDE.md.
+Some keys of LONG_SHORT_100_100 (long_scores, short_scores, reset, short_side_costs, cash_interest, sensitivity_reset) and REIT_LIQUIDITY_SUBSTITUTE (applies_to) are descriptive: the scripts implement them in code and do not read them.
 """
 
 # ---------- Data source ----------
-DATA_SOURCE = "WRDS"            # Compustat (fundamentals) + CRSP (returns)
 
 # ---------- Universe ----------
 # Replaces INDEX = "S&P 500": crsp.msp500list is not accessible (CLAUDE.md section 4).
-UNIVERSE = "top500_us_mktcap"
 UNIVERSE_SIZE = 500
 UNIVERSE_LABEL = "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)"
-UNIVERSE_BUFFER = None          # headline: no buffer; robustness variant: entry <= 450, exit > 550
 EXCLUDED_GICS_SECTORS = ["40", "55"]   # 40 = Financials, 55 = Utilities
 KEEP_REITS_ON_ALL_DATES = True         # equity REITs stay in on all dates, including while GICS classed them in sector 40
 REIT_ISSUER_TYPE = "REIT"              # crsp.msf_v2 issuertype, row-level value on the formation date
@@ -83,11 +77,9 @@ HOLDING_MONTHS = 12
 USE_ACTUAL_FILING_DATE = True   # Compustat filing dates where available
 FALLBACK_LAG_DAYS = 120         # fiscal year-end + 120 days if no filing date
 MAX_SCORE_AGE_MONTHS = 18       # older scores at formation are dropped as stale
-SCORE_AGE_BASIS = "fiscal_year_end"   # age = calendar months from fiscal year-end to formation date
 
 # ---------- Signal definitions ----------
 ZERO_DEBT_COUNTS_AS_PASS = True       # no LT debt in both years -> leverage test passes
-SHARE_ISSUANCE_TOLERANCE = 0.02       # split-adjusted shares up > 2% -> fails "no issuance"
 MISSING_SIGNAL_RULE = "drop"          # any of 9 signals uncomputable -> drop company-year (report count)
 
 # ---------- Cleaning rules not specified by the brief (set before any returns; approved at Checkpoint 2) ----------
@@ -96,80 +88,46 @@ STUB_MAX_DAYS = 380                   # no gaps fall in 338-395, so results don'
 STUB_EXCLUSION = "both_sides"         # no year-over-year comparison into or out of a flagged year
 OUTLIER_YOY_RATIO = 10                # flag for review, never drop: at, sale or adjusted shares move > 10x up or down in a year
 MIN_SALE_FOR_MARGIN = 0               # margin uncomputable when sale <= this
-MIN_CSHO_FOR_SHARE_TEST = 1           # millions; F_EQ_OFFER uncomputable below this in either year (Compustat placeholders)
 FILING_LATE_LOG_DAYS = (120, 365)     # log labels only
 
 # ---------- Portfolios ----------
 HIGH_SCORES = [8, 9]
 LOW_SCORES = [0, 1, 2, 3, 4]          # was [0, 1, 2]: median 2 names a date, empty in 3 years; changed at Checkpoint 2 on counts only, before any returns
-HEADLINE_VERSION = "A"                # A = full universe (headline); B = cheapest third by book-to-market
-VALUE_FILTER_QUANTILE = 1 / 3         # used for version B only
-VERSION_B_CURRENCY = "USD"            # version B excludes rows reported in other currencies (curcd); no FX conversion
-WEIGHTING = "equal_buy_and_hold"      # equal weights at formation, drift with prices for 12 months
+VALUE_FILTER_QUANTILE = 1 / 3         # used by the value_filter_B variant (14_robustness_extra.py) only
+VERSION_B_CURRENCY = "USD"            # the value_filter_B variant excludes rows reported in other currencies (curcd); no FX conversion
 DELISTING_RULE = "reinvest_pro_rata"  # delisting return included, proceeds spread across remaining holdings
 TRANSACTION_COST_BPS = 10             # per trade, charged on turnover at each rebalance
-LONG_SHORT_SPREAD = "diagnostic_only" # High minus Low, no shorting costs; long-only context
 MIN_BUCKET_NAMES = 10                 # flag any portfolio bucket smaller than this (CLAUDE.md Phase 5)
 
 # ---------- Portfolio mechanics not specified by the brief (set before any returns) ----------
-BOOK_EQUITY_RULE = "ceq_plus_txditc"  # version B only; null txditc = 0; non-positive stays ranked (never cheapest), null is unranked
-TURNOVER_BASIS = "two_way"            # sum of |target - drifted weight|; buys and sells each charged TRANSACTION_COST_BPS; one-way also reported
 FIRST_PORTFOLIO_TURNOVER = 1.0        # June 2005 is charged as buying from cash
-CHARGE_MIDPERIOD_REINVESTMENT = False # brief charges only "at each rebalance"; includes formation-date delisters' weight
-COST_TIMING = "first_holding_month"   # net = (1 + gross) x (1 - cost) - 1
-CHARGE_PRIMARY_BENCHMARK = True       # charged like the buckets; RSP and SPY carry no extra charge
-HEADLINE_RETURNS = "net"              # headline tables and regressions are net, gross alongside; monotonicity is gross
-HIT_RATE_COMPLETE_YEARS_ONLY = True   # % of years High beats benchmark: 20 complete June-May years; partial 2025 shown separately
 
 # ---------- Benchmarks ----------
-PRIMARY_BENCHMARK = "equal_weighted_eligible_universe"   # same stocks, same weighting, no F-score
 SECONDARY_BENCHMARKS = ["RSP", "SPY"]
 
 # ---------- Evaluation ----------
 FACTOR_MODEL = ["Mkt-RF", "SMB", "HML", "RMW", "CMA", "MOM"]   # Fama-French 5 + momentum
-STANDARD_ERRORS = "newey_west"
-NEWEY_WEST_LAGS = 12                  # v1's fixed lag count; spec_v2 uses the automatic rule in SPEC_V2['hac_lag_rule'] and does not read this
-SIGNIFICANCE_T_STAT = 2.0
 SUBPERIODS = [("2005-06", "2015-05"), ("2015-06", "2025-12")]  # second period was to 2026-05; returns end 2025-12
 
 # ---------- Robustness grid (run after headline; one change at a time) ----------
-ROBUSTNESS = {
-    "high_cutoff_7plus": {"HIGH_SCORES": [7, 8, 9]},
-    "value_filter_B": {"HEADLINE_VERSION": "B"},
-    "cap_weighted": {"WEIGHTING": "cap_buy_and_hold"},
-    "sector_neutral": {"WEIGHTING": "equal_sector_neutral"},
-    "lag_90_days": {"FALLBACK_LAG_DAYS": 90},
-    "cost_25bps": {"TRANSACTION_COST_BPS": 25},
-    "eight_signal_no_liquidity": {"MISSING_SIGNAL_RULE": "eight_signals_if_no_liquidity"},
+ROBUSTNESS = {                        # read by 01b_build_universe_buffer.py only; the other variants are defined in 13_robustness.py and 14_robustness_extra.py
     "universe_buffer": {"UNIVERSE_BUFFER": {"entry_rank": 450, "exit_rank": 550}},
-    "profitability_screen": {"PROFITABILITY_SCREEN": True},
 }
 
 # ---------- Robustness definitions (set after headline returns; timing qualified in output/writeup.md) ----------
 EIGHT_SIGNAL_HIGH_SCORES = [8]        # firms with no liquidity signal, out of 8; proportional to the 9-signal cutoffs
 EIGHT_SIGNAL_LOW_SCORES = [0, 1, 2, 3]  # Middle is therefore 4-7
-EIGHT_SIGNAL_NULL_RETURN_RULE = "hold_flat"  # no return, not an exit: General Growth, May 2009
 NULL_RETURN_HOLD_FLAT_MONTHS = {      # the only approved cases, by variant and PERMNO; any other held null stops the run
-    "eight_signal_no_liquidity": {79129: ["2009-05"]},  # General Growth
-    "reit_liquidity_substitute": {79129: ["2009-05"]},  # General Growth
     "universe_buffer": {10942: ["2007-02", "2007-03", "2007-04", "2007-05"]},  # Comverse Technology
-    "spec_v2_reruns": {79129: ["2009-05"], 11896: ["2007-11", "2007-12", "2008-01", "2008-02", "2008-03", "2008-04", "2008-05"]},  # added 2026-11-02 before any rerun result; General Growth if held in a REIT-rerun bucket, Maxim as in spec_v2
-    "spec_v2": {11896: ["2007-11", "2007-12", "2008-01", "2008-02", "2008-03", "2008-04", "2008-05"],  # Maxim Integrated, unscored, all-included benchmark only
-                79129: ["2009-05"]},  # General Growth, unscored in v2, all-included benchmark only; held flat, no charge, set before any v2 return
+    "extension_and_reit": {79129: ["2009-05"], 11896: ["2007-11", "2007-12", "2008-01", "2008-02", "2008-03", "2008-04", "2008-05"]},  # added 2026-11-02 before any rerun result; General Growth if held in a REIT-rerun bucket, Maxim as in the pipeline
+    "pipeline": {11896: ["2007-11", "2007-12", "2008-01", "2008-02", "2008-03", "2008-04", "2008-05"],  # Maxim Integrated, unscored, all-included benchmark only
+                79129: ["2009-05"]},  # General Growth, unscored, all-included benchmark only; held flat, no charge, set before any return
 }
-CAP_WEIGHT_BASIS = "formation_mktcap" # then drift; applies to all buckets and the benchmark
-SECTOR_NEUTRAL_WEIGHTS = "benchmark_sector_weights"  # equal weight within sector; sector weights from the benchmark on that date
-SECTOR_NEUTRAL_EMPTY_SECTOR = "spread_pro_rata"      # a bucket with no names in a sector spreads that weight across the others
-PROFITABILITY_SCREEN = False          # headline off; variant requires positive trailing-four-quarter and latest-quarter earnings
-PROFITABILITY_SCREEN_SCOPE = "all_scored"  # applies to every bucket and the benchmark, so the benchmark changes
 QTR_FILING_SRCTYPES = ("10Q", "10K")  # earliest filing after quarter end, else quarter end + FALLBACK_LAG_DAYS; not rdq
 QTR_EARNINGS_FIELD = "niq"            # net income, matching ni in F_ROA
-QTR_SELECTION = "latest_four_consecutive_by_datadate"  # one row per gvkey-datadate (non-null niq, then later fyearq), 3 calendar months apart
-QTR_UNCONFIRMED_RULE = "fail"         # < 4 quarters, non-consecutive, null earnings or latest quarter older than MAX_SCORE_AGE_MONTHS: fails, logged
-QTR_PULL_FIELDS = ["gvkey", "datadate", "fyearq", "fqtr", "fyr", "niq", "curcdq"]  # 08_robustness.py, comp.fundq
-QTR_FILING_PULL_FIELDS = ["gvkey", "consol", "popsrc", "srctype", "filedatetime", "datadate", "filedate"]  # 08_robustness.py, comp.co_filedate
-REIT_PULL_FIELDS = ["gvkey", "datadate", "fyear", "che", "lt"]  # 09_reit_liquidity.py, comp.funda
-EXTENSION_PULL = {                    # 09a_extension_pull.py; comp.secm for the 2025 list and the two funds
+QTR_PULL_FIELDS = ["gvkey", "datadate", "fyearq", "fqtr", "fyr", "niq", "curcdq"]  # 02b_pull_quarterly.py, comp.fundq
+QTR_FILING_PULL_FIELDS = ["gvkey", "consol", "popsrc", "srctype", "filedatetime", "datadate", "filedate"]  # 02b_pull_quarterly.py, comp.co_filedate
+EXTENSION_PULL = {                    # 02c_pull_extension.py; comp.secm for the 2025 list and the two funds
     "start": "2025-01-01",
     "end": "2026-06-30",
     "fields": ["gvkey", "iid", "datadate", "conm", "tic", "cusip", "trt1m", "prccm", "ajexm", "trfm", "secstat",
@@ -202,13 +160,11 @@ REIT_LIQUIDITY_SUBSTITUTE = {         # post-write-up labelled variant, not in R
     "buckets": "standard",            # 0-9 scale, so HIGH_SCORES and LOW_SCORES apply
     "null_return_rule": "hold_flat",  # General Growth, May 2009 only; any other held null stops the run
 }
-EXPECTED_SPAN_GVKEYS = 20          # data-quality guard in 04_scores.py: gvkeys whose rows span two PERMCOs; moved here from a hard-coded 20 (v3 review H5)
-HEADLINE_SPEC = "spec_v3"             # v3 corrections (output/prereg_v3.md) sit on the spec_v2 pipeline; SPEC_V2 below still defines its mechanics             # designated by the user on 2026-11-02; v1 outputs are kept unchanged as the superseded first specification
-SPEC_V2 = {                           # re-specification after external review; now the headline; v1 outputs stay untouched
-    "label": "spec_v2",
-    "output_dir": "output/spec_v2",
+PIPELINE = {                          # the one pipeline: re-specification after external review (CLAUDE.md 8f, 8h)
+    "label": "core",
+    "output_dir": "output/core",
     "profit_field": "ib",             # net income before extraordinary items, as in the paper, replaces ni in ROA, CFO-ROA accruals and DROA; new raw pull
-    "issuance_field": "sstk_net_of_prstkc",   # REVISED before any v2 return: F_EQ_OFFER = 1 if sstk - prstkc <= 0 (null counts 0), else 0. Literal sstk > 0 flagged 77% of firm-years (option-exercise proceeds), pass rate 20% against 81% in v1; it is kept as a reported sensitivity
+    "issuance_field": "sstk_net_of_prstkc",   # REVISED before any return of this pipeline: F_EQ_OFFER = 1 if sstk - prstkc <= 0 (null counts 0), else 0. Literal sstk > 0 flagged 77% of firm-years (option-exercise proceeds); the literal rule is now primary (prereg_main) and the net rule a sensitivity
     "issuance_sensitivity": "sstk_literal",   # F_EQ_OFFER = 1 only if sstk is 0 or null; run and reported beside, never chosen from
     "zero_debt_requires_lag2": True,  # ZERO_DEBT_COUNTS_AS_PASS stays, but only where the prior-year inputs for the change exist
     "fallback_availability": "exclude",  # a firm-year with no real 10-K filing date is unscorable; no 120-day fallback
@@ -220,21 +176,9 @@ SPEC_V2 = {                           # re-specification after external review; 
     "primary_tests": ["raw_excess_vs_primary_benchmark", "mkt_smb_hml_mom"],   # six-factor alpha is secondary because RMW overlaps the screen
     "multiple_testing": "holm_over_prespecified_family",   # family: full period and the two SUBPERIODS from the original config
     "report_power": True,             # minimum detectable excess return and alpha at 80% power, 5% two-sided
-    "sensitivities": ["hac_lag_12", "scored_only_benchmark"],   # as locked; the run also reports lag 6 and the T/(T-k) correction (keys below), all reported beside, never used to choose
-    "alpha_level": 0.05,             # added after the first v2 returns, value already used by script 14: size of the power calculation
-    "power_level": 0.80,             # added after the first v2 returns, value already used by script 14
-    "sensitivity_lags": [6, 12],     # added after the first v2 returns: the two extra lag counts that script 14 reports beside the automatic lag
-    "sensitivity_small_sample_correction": True,   # added after the first v2 returns: also report the automatic lag with covariance multiplied by T / (T - k)
-}
-V2_RERUNS = {                         # the three labelled v1-specification runs, rerun on spec_v2 inputs; locked 2026-11-02 before any rerun result
-    "label": "spec_v2_reruns",
-    "rule": "same definitions as EXTENSION_2026, REIT_LIQUIDITY_SUBSTITUTE and LONG_SHORT_100_100; only the inputs change to the spec_v2 scores, lists, benchmark and cost mechanics",
-    "output_dirs": {"extension": "output/spec_v2/extension_2026", "reit": "output/spec_v2/reit_liquidity_substitute", "long_short": "output/spec_v2/long_short_100_100"},
-    "extension_portfolio": "spec_v2 net rule, 2025 list, weights drifted to end-2025, held January-May 2026 with comp.secm trt1m under the four EXTENSION_2026 conditions",
-    "reit_applies_to": "spec_v2 REIT rows where F_DLIQUID is the only uncomputable signal; ratio che / lt as in REIT_LIQUIDITY_SUBSTITUTE; ib, net issuance and the v2 availability rules apply to the other signals",
-    "long_short_series": "gross High and gross Low from the spec_v2 net-rule run, with the LONG_SHORT_100_100 mechanics (annual reset at 0.50% and 2.00% borrow, monthly reset charged view, spread comparison), to December 2025 and to May 2026",
-    "tests": "descriptive only: reported beside the v1-specification versions; not added to the Holm family; counted in the trial log",
-    "no_new_rules": True,             # anything a rerun needs that no rule covers stops the run and goes to the master
+    "alpha_level": 0.05,             # added after the first returns, value already used by script 07: size of the power calculation
+    "power_level": 0.80,             # added after the first returns, value already used by script 07
+    "sensitivity_lags": [6, 12],     # added after the first returns: the two extra lag counts that script 07 reports beside the automatic lag
+    "sensitivity_small_sample_correction": True,   # added after the first returns: also report the automatic lag with covariance multiplied by T / (T - k)
 }
 BUFFER_FIRST_LIST = "top_500"      # 2005 has no history; membership tracks PERMCO on the pre-exclusion ranking
-BUFFER_NULL_RETURN_RULE = "hold_flat" # no return, not an exit; sold at last value at the next rebalance: Comverse Technology, 2007-02 to 2007-05

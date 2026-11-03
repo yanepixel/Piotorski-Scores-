@@ -3,42 +3,19 @@ data/
 *.parquet
 __pycache__/
 
-# Reruns write logs and detail files here. Only the listed summary tables are published.
+# Only portfolio-level summary tables are published; every other CSV stays out.
 *.csv
-!output/tables/bucket_counts.csv
-!output/tables/coverage_by_sector_year.csv
-!output/tables/factor_regressions.csv
-!output/tables/performance.csv
-!output/tables/portfolio_turnover.csv
-!output/tables/robustness_comparison.csv
-!output/tables/robustness_subperiods.csv
-!output/tables/score_distribution.csv
-!output/tables/signal_pass_rates.csv
-!output/tables/signal_pass_rates_by_year.csv
-!output/tables/subperiods.csv
-!output/tables/versus_benchmark.csv
-!output/tables/year_by_year.csv
-!output/tables/returns_by_score.csv
-output/logs/*
-output/extension_2026/validation.md
-
-# spec_v2 summary tables (portfolio level, no company values). Every other spec_v2 CSV stays out.
-!output/spec_v2/headline_v2.csv
-!output/spec_v2/tests_v2.csv
-!output/spec_v2/subperiods_v2.csv
-!output/spec_v2/year_by_year_v2.csv
-!output/spec_v2/versus_v2.csv
-!output/spec_v2/factor_loadings_v2.csv
-!output/spec_v2/drops_by_date_v2.csv
-!output/spec_v2/headline_v2_numbers.csv
-!output/spec_v2/writeup_figures_v2.csv
-!output/spec_v2/literal_sensitivity/headline_v2.csv
-!output/spec_v2/literal_sensitivity/tests_v2.csv
-
-# Hashes of raw files (names, sizes, row counts, hashes only; no data values)
+!output/core/headline.csv
+!output/core/tests.csv
+!output/core/subperiods.csv
+!output/core/year_by_year.csv
+!output/core/versus.csv
+!output/core/factor_loadings.csv
+!output/core/drops_by_date.csv
+!output/core/headline_numbers.csv
+!output/core/net_sensitivity/headline.csv
+!output/core/net_sensitivity/tests.csv
+!output/results/*.csv
+!output/logs/raw_hashes.csv
+!output/logs/raw_hash_compare.csv
 !output/logs/raw_hashes_added.csv
-
-# v3 summary tables (portfolio level, no company values) and raw-file hashes
-!output/spec_v3/*.csv
-!output/logs/raw_hashes_v3.csv
-!output/logs/raw_hash_compare_v3.csv

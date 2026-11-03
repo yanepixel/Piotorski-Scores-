@@ -1,7 +1,0 @@
-universe_label,portfolio,versus,excess_return_annual,cagr_difference,tracking_error,information_ratio,excess_t_newey_west
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",High,Benchmark,-0.0029347723912657797,-0.004391362617291783,0.03689230272599118,-0.07954972106412292,-0.34004435094262403
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Middle,Benchmark,-0.0013356013909971009,-0.0009146902343253327,0.012981620657917496,-0.10288402551514375,-0.5786162863473946
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Low,Benchmark,0.002734469982541623,-0.00415390892431633,0.08280577258928251,0.033022697537098314,0.1135732472068495
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)","High, gross",Benchmark_gross,-0.0016763178263380538,-0.0029919706432233184,0.03679972771759777,-0.04555245188774677,-0.1945556634178181
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",RSP,Benchmark,-0.012226323842754785,-0.014947776095512788,0.03755685890260218,-0.3255417039657613,-1.3844652191318103
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",SPY,Benchmark,-0.006199750484050277,-0.004639714003511264,0.042268649806831406,-0.14667491184088594,-0.6167477446729291

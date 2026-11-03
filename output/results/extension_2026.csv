@@ -1,0 +1,227 @@
+block,item,series,window,value
+list_2025,weight_of_names_leaving_in_last_crsp_month_at_dec2025,High,2025 list; a 10 bp charge on it would be weight x 0.0010,0.0
+list_2025,weight_of_names_leaving_in_last_crsp_month_at_dec2025,Middle,2025 list; a 10 bp charge on it would be weight x 0.0010,0.0034856841474265815
+list_2025,weight_of_names_leaving_in_last_crsp_month_at_dec2025,Low,2025 list; a 10 bp charge on it would be weight x 0.0010,0.0
+list_2025,weight_of_names_leaving_in_last_crsp_month_at_dec2025,Benchmark,2025 list; a 10 bp charge on it would be weight x 0.0010,0.0024061808822901536
+list_2025,weight_of_names_leaving_in_last_crsp_month_at_dec2025,BenchmarkScored,2025 list; a 10 bp charge on it would be weight x 0.0010,0.002583441158890856
+list_2025,names_held,High,2025 list,33.0
+list_2025,names_held,Middle,2025 list,273.0
+list_2025,names_held,Low,2025 list,58.0
+list_2025,names_held,Unscored,2025 list,29.0
+list_2025,names_held,Benchmark (all included),2025 list,393.0
+list_2025,names_held,BenchmarkScored,2025 list,364.0
+performance,months,High,Jun2005-Dec2025,247.0
+performance,CAGR,High,Jun2005-Dec2025,0.12002544845573171
+performance,volatility,High,Jun2005-Dec2025,0.18146073952167752
+performance,sharpe,High,Jun2005-Dec2025,0.6274689614744485
+performance,max_drawdown,High,Jun2005-Dec2025,-0.4594451658444142
+performance,months,Middle,Jun2005-Dec2025,247.0
+performance,CAGR,Middle,Jun2005-Dec2025,0.1115245656461612
+performance,volatility,Middle,Jun2005-Dec2025,0.15871486331506304
+performance,sharpe,Middle,Jun2005-Dec2025,0.6440396720759524
+performance,max_drawdown,Middle,Jun2005-Dec2025,-0.4873920184451228
+performance,months,Low,Jun2005-Dec2025,247.0
+performance,CAGR,Low,Jun2005-Dec2025,0.10835502099059013
+performance,volatility,Low,Jun2005-Dec2025,0.17046066662007517
+performance,sharpe,Low,Jun2005-Dec2025,0.5934054441031487
+performance,max_drawdown,Low,Jun2005-Dec2025,-0.5229887689669863
+performance,months,Benchmark,Jun2005-Dec2025,247.0
+performance,CAGR,Benchmark,Jun2005-Dec2025,0.10788997638016506
+performance,volatility,Benchmark,Jun2005-Dec2025,0.16261501138448725
+performance,sharpe,Benchmark,Jun2005-Dec2025,0.6121465651489468
+performance,max_drawdown,Benchmark,Jun2005-Dec2025,-0.5064427819704311
+performance,months,BenchmarkScored,Jun2005-Dec2025,247.0
+performance,CAGR,BenchmarkScored,Jun2005-Dec2025,0.11355697554260757
+performance,volatility,BenchmarkScored,Jun2005-Dec2025,0.16166009398596112
+performance,sharpe,BenchmarkScored,Jun2005-Dec2025,0.6464434837243144
+performance,max_drawdown,BenchmarkScored,Jun2005-Dec2025,-0.49175060504183077
+performance,months,RSP,Jun2005-Dec2025,247.0
+performance,CAGR,RSP,Jun2005-Dec2025,0.09853143612161208
+performance,volatility,RSP,Jun2005-Dec2025,0.17002011880607837
+performance,sharpe,RSP,Jun2005-Dec2025,0.5423123834101975
+performance,max_drawdown,RSP,Jun2005-Dec2025,-0.5558668867104368
+performance,months,SPY,Jun2005-Dec2025,247.0
+performance,CAGR,SPY,Jun2005-Dec2025,0.1088394982136136
+performance,volatility,SPY,Jun2005-Dec2025,0.14904432753182933
+performance,sharpe,SPY,Jun2005-Dec2025,0.6599989606775511
+performance,max_drawdown,SPY,Jun2005-Dec2025,-0.5079769991069322
+gap,mean_monthly_x12,High_minus_Benchmark,Jun2005-Dec2025,0.014207733679050788
+gap,cagr_gap,High_minus_Benchmark,Jun2005-Dec2025,0.012135472075566645
+gap,hac_lag_automatic,High_minus_Benchmark,Jun2005-Dec2025,4.0
+gap_test_raw,t_auto,High_minus_Benchmark,Jun2005-Dec2025,1.0312810158706434
+gap_test_raw,p_auto,High_minus_Benchmark,Jun2005-Dec2025,0.3034218950375636
+gap_test_4factor,alpha_x12_auto,High_minus_Benchmark,Jun2005-Dec2025,0.010570295929726083
+gap_test_4factor,t_auto,High_minus_Benchmark,Jun2005-Dec2025,0.7717114653631485
+gap_test_4factor,p_auto,High_minus_Benchmark,Jun2005-Dec2025,0.4410382429104602
+gap_test_raw,t_lag12,High_minus_Benchmark,Jun2005-Dec2025,1.0962864058539799
+gap_test_raw,p_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.27402550203175435
+gap_test_4factor,alpha_x12_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.010570295929726083
+gap_test_4factor,t_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.8454396565288067
+gap_test_4factor,p_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.398700527774414
+gap,mean_monthly_x12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.009244531673802606
+gap,cagr_gap,High_minus_BenchmarkScored,Jun2005-Dec2025,0.006468472913124135
+gap,hac_lag_automatic,High_minus_BenchmarkScored,Jun2005-Dec2025,4.0
+gap_test_raw,t_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.6850663518870954
+gap_test_raw,p_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.49394704044287224
+gap_test_4factor,alpha_x12_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.005701809280807596
+gap_test_4factor,t_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.4318827540295546
+gap_test_4factor,p_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.6662111690195769
+gap_test_raw,t_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.7309517968703947
+gap_test_raw,p_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.46550422106769335
+gap_test_4factor,alpha_x12_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.005701809280807596
+gap_test_4factor,t_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.48070196333302817
+gap_test_4factor,p_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.6311626195656471
+gap,mean_monthly_x12,High_minus_Low,Jun2005-Dec2025,0.012469478194080248
+gap,hac_lag_automatic,High_minus_Low,Jun2005-Dec2025,4.0
+gap_test_raw,t_auto,High_minus_Low,Jun2005-Dec2025,0.6358679511234253
+gap_test_raw,p_auto,High_minus_Low,Jun2005-Dec2025,0.5254536031718086
+gap_test_4factor,alpha_x12_auto,High_minus_Low,Jun2005-Dec2025,0.006954512359136786
+gap_test_4factor,t_auto,High_minus_Low,Jun2005-Dec2025,0.3648277106677715
+gap_test_4factor,p_auto,High_minus_Low,Jun2005-Dec2025,0.7155586346208391
+gap_test_raw,t_lag12,High_minus_Low,Jun2005-Dec2025,0.596405185563469
+gap_test_raw,p_lag12,High_minus_Low,Jun2005-Dec2025,0.551452992558637
+gap_test_4factor,alpha_x12_lag12,High_minus_Low,Jun2005-Dec2025,0.006954512359136786
+gap_test_4factor,t_lag12,High_minus_Low,Jun2005-Dec2025,0.3503866823673113
+gap_test_4factor,p_lag12,High_minus_Low,Jun2005-Dec2025,0.7263533060620713
+hit_years,complete_years,High,Jun2005-Dec2025,20.0
+hit_years,High_beats_Benchmark,High,Jun2005-Dec2025,10.0
+hit_years,High_beats_BenchmarkScored,High,Jun2005-Dec2025,10.0
+performance,months,High,Jun2005-2026-05,252.0
+performance,CAGR,High,Jun2005-2026-05,0.1338815868515859
+performance,volatility,High,Jun2005-2026-05,0.1855938469472314
+performance,sharpe,High,Jun2005-2026-05,0.6826459132052207
+performance,max_drawdown,High,Jun2005-2026-05,-0.4594451658444142
+performance,months,Middle,Jun2005-2026-05,252.0
+performance,CAGR,Middle,Jun2005-2026-05,0.11316780797645465
+performance,volatility,Middle,Jun2005-2026-05,0.15814757554871814
+performance,sharpe,Middle,Jun2005-2026-05,0.6529146099568469
+performance,max_drawdown,Middle,Jun2005-2026-05,-0.4873920184451228
+performance,months,Low,Jun2005-2026-05,252.0
+performance,CAGR,Low,Jun2005-2026-05,0.12291995063660144
+performance,volatility,Low,Jun2005-2026-05,0.17625349631490994
+performance,sharpe,Low,Jun2005-2026-05,0.6519704418772377
+performance,max_drawdown,Low,Jun2005-2026-05,-0.5229887689669863
+performance,months,Benchmark,Jun2005-2026-05,252.0
+performance,CAGR,Benchmark,Jun2005-2026-05,0.11292218756836592
+performance,volatility,Benchmark,Jun2005-2026-05,0.16292758256161496
+performance,sharpe,Benchmark,Jun2005-2026-05,0.6371884467721832
+performance,max_drawdown,Benchmark,Jun2005-2026-05,-0.5064427819704311
+performance,months,BenchmarkScored,Jun2005-2026-05,252.0
+performance,CAGR,BenchmarkScored,Jun2005-2026-05,0.11874640648677315
+performance,volatility,BenchmarkScored,Jun2005-2026-05,0.16199447307189155
+performance,sharpe,BenchmarkScored,Jun2005-2026-05,0.6722575661464443
+performance,max_drawdown,BenchmarkScored,Jun2005-2026-05,-0.49175060504183077
+performance,months,RSP,Jun2005-2026-05,252.0
+performance,CAGR,RSP,Jun2005-2026-05,0.10122257717104266
+performance,volatility,RSP,Jun2005-2026-05,0.16957805156144024
+performance,sharpe,RSP,Jun2005-2026-05,0.5557011541606346
+performance,max_drawdown,RSP,Jun2005-2026-05,-0.5558668867104368
+performance,months,SPY,Jun2005-2026-05,252.0
+performance,CAGR,SPY,Jun2005-2026-05,0.11219624377496262
+performance,volatility,SPY,Jun2005-2026-05,0.14992799361830828
+performance,sharpe,SPY,Jun2005-2026-05,0.6749095636149072
+performance,max_drawdown,SPY,Jun2005-2026-05,-0.5079769991069322
+gap,mean_monthly_x12,High_minus_Benchmark,Jun2005-2026-05,0.022720852618262028
+gap,cagr_gap,High_minus_Benchmark,Jun2005-2026-05,0.020959399283219993
+gap,hac_lag_automatic,High_minus_Benchmark,Jun2005-2026-05,4.0
+gap_test_raw,t_auto,High_minus_Benchmark,Jun2005-2026-05,1.4725754216356925
+gap_test_raw,p_auto,High_minus_Benchmark,Jun2005-2026-05,0.14211836989085053
+gap_test_4factor,alpha_x12_auto,High_minus_Benchmark,Jun2005-2026-05,0.015836632014813043
+gap_test_4factor,t_auto,High_minus_Benchmark,Jun2005-2026-05,1.1021644717046069
+gap_test_4factor,p_auto,High_minus_Benchmark,Jun2005-2026-05,0.2714629527185634
+gap_test_raw,t_lag12,High_minus_Benchmark,Jun2005-2026-05,1.3823809507068796
+gap_test_raw,p_lag12,High_minus_Benchmark,Jun2005-2026-05,0.1680835675955611
+gap_test_4factor,alpha_x12_lag12,High_minus_Benchmark,Jun2005-2026-05,0.015836632014813043
+gap_test_4factor,t_lag12,High_minus_Benchmark,Jun2005-2026-05,1.10817683665341
+gap_test_4factor,p_lag12,High_minus_Benchmark,Jun2005-2026-05,0.2688633658414453
+gap,mean_monthly_x12,High_minus_BenchmarkScored,Jun2005-2026-05,0.01763389211642569
+gap,cagr_gap,High_minus_BenchmarkScored,Jun2005-2026-05,0.015135180364812761
+gap,hac_lag_automatic,High_minus_BenchmarkScored,Jun2005-2026-05,4.0
+gap_test_raw,t_auto,High_minus_BenchmarkScored,Jun2005-2026-05,1.1658217917180942
+gap_test_raw,p_auto,High_minus_BenchmarkScored,Jun2005-2026-05,0.2447931130309212
+gap_test_4factor,alpha_x12_auto,High_minus_BenchmarkScored,Jun2005-2026-05,0.010866667158775095
+gap_test_4factor,t_auto,High_minus_BenchmarkScored,Jun2005-2026-05,0.7840801190968782
+gap_test_4factor,p_auto,High_minus_BenchmarkScored,Jun2005-2026-05,0.4337443674975698
+gap_test_raw,t_lag12,High_minus_BenchmarkScored,Jun2005-2026-05,1.0961020473716163
+gap_test_raw,p_lag12,High_minus_BenchmarkScored,Jun2005-2026-05,0.27408467400446135
+gap_test_4factor,alpha_x12_lag12,High_minus_BenchmarkScored,Jun2005-2026-05,0.010866667158775095
+gap_test_4factor,t_lag12,High_minus_BenchmarkScored,Jun2005-2026-05,0.7961911532569287
+gap_test_4factor,p_lag12,High_minus_BenchmarkScored,Jun2005-2026-05,0.4266854926408243
+gap,mean_monthly_x12,High_minus_Low,Jun2005-2026-05,0.01153702620141079
+gap,hac_lag_automatic,High_minus_Low,Jun2005-2026-05,4.0
+gap_test_raw,t_auto,High_minus_Low,Jun2005-2026-05,0.5944997964531793
+gap_test_raw,p_auto,High_minus_Low,Jun2005-2026-05,0.5527133706111071
+gap_test_4factor,alpha_x12_auto,High_minus_Low,Jun2005-2026-05,0.007414829034059188
+gap_test_4factor,t_auto,High_minus_Low,Jun2005-2026-05,0.3927899915615529
+gap_test_4factor,p_auto,High_minus_Low,Jun2005-2026-05,0.6948133662901375
+gap_test_raw,t_lag12,High_minus_Low,Jun2005-2026-05,0.5634301288780373
+gap_test_raw,p_lag12,High_minus_Low,Jun2005-2026-05,0.573645019304976
+gap_test_4factor,alpha_x12_lag12,High_minus_Low,Jun2005-2026-05,0.007414829034059188
+gap_test_4factor,t_lag12,High_minus_Low,Jun2005-2026-05,0.37838522842564876
+gap_test_4factor,p_lag12,High_minus_Low,Jun2005-2026-05,0.705469446535267
+hit_years,complete_years,High,Jun2005-2026-05,21.0
+hit_years,High_beats_Benchmark,High,Jun2005-2026-05,11.0
+hit_years,High_beats_BenchmarkScored,High,Jun2005-2026-05,11.0
+jan_may_2026,compounded,High,Jan-May2026,0.3572119640525153
+jan_may_2026,month_2026-01,High,Jan-May2026,0.09071583610424905
+jan_may_2026,month_2026-02,High,Jan-May2026,0.05884028793299012
+jan_may_2026,month_2026-03,High,Jan-May2026,-0.08059812917180054
+jan_may_2026,month_2026-04,High,Jan-May2026,0.12573908017157454
+jan_may_2026,month_2026-05,High,Jan-May2026,0.13543552243739576
+jan_may_2026,compounded,Middle,Jan-May2026,0.07796826491734787
+jan_may_2026,month_2026-01,Middle,Jan-May2026,0.012502689373682374
+jan_may_2026,month_2026-02,Middle,Jan-May2026,0.03083178664393671
+jan_may_2026,month_2026-03,Middle,Jan-May2026,-0.05260370435871187
+jan_may_2026,month_2026-04,Middle,Jan-May2026,0.04894481748411472
+jan_may_2026,month_2026-05,Middle,Jan-May2026,0.03929219135907891
+jan_may_2026,compounded,Low,Jan-May2026,0.3730432194767166
+jan_may_2026,month_2026-01,Low,Jan-May2026,0.0723845162736283
+jan_may_2026,month_2026-02,Low,Jan-May2026,0.044792169507841706
+jan_may_2026,month_2026-03,Low,Jan-May2026,-0.059373652330338755
+jan_may_2026,month_2026-04,Low,Jan-May2026,0.20999294574093752
+jan_may_2026,month_2026-05,Low,Jan-May2026,0.07672249421419863
+jan_may_2026,compounded,Benchmark,Jan-May2026,0.14781470344270775
+jan_may_2026,month_2026-01,Benchmark,Jan-May2026,0.030886437671157063
+jan_may_2026,month_2026-02,Benchmark,Jan-May2026,0.037630576667903703
+jan_may_2026,month_2026-03,Benchmark,Jan-May2026,-0.058514723138755054
+jan_may_2026,month_2026-04,Benchmark,Jan-May2026,0.08455581892896746
+jan_may_2026,month_2026-05,Benchmark,Jan-May2026,0.05087910058876188
+jan_may_2026,compounded,BenchmarkScored,Jan-May2026,0.15309991366381182
+jan_may_2026,month_2026-01,BenchmarkScored,Jan-May2026,0.029776055753617303
+jan_may_2026,month_2026-02,BenchmarkScored,Jan-May2026,0.03603496647350268
+jan_may_2026,month_2026-03,BenchmarkScored,Jan-May2026,-0.05664179775021905
+jan_may_2026,month_2026-04,BenchmarkScored,Jan-May2026,0.08442418279533714
+jan_may_2026,month_2026-05,BenchmarkScored,Jan-May2026,0.05651073270966833
+jan_may_2026,compounded,RSP,Jan-May2026,0.0947631395549986
+jan_may_2026,month_2026-01,RSP,Jan-May2026,0.034036
+jan_may_2026,month_2026-02,RSP,Jan-May2026,0.034784
+jan_may_2026,month_2026-03,RSP,Jan-May2026,-0.059709000000000005
+jan_may_2026,month_2026-04,RSP,Jan-May2026,0.060025
+jan_may_2026,month_2026-05,RSP,Jan-May2026,0.026494
+jan_may_2026,compounded,SPY,Jan-May2026,0.1124045332270156
+jan_may_2026,month_2026-01,SPY,Jan-May2026,0.014738
+jan_may_2026,month_2026-02,SPY,Jan-May2026,-0.008642
+jan_may_2026,month_2026-03,SPY,Jan-May2026,-0.049349
+jan_may_2026,month_2026-04,SPY,Jan-May2026,0.10505300000000001
+jan_may_2026,month_2026-05,SPY,Jan-May2026,0.052626
+jan_may_2026,compounded,High_minus_Low,Jan-May2026,-0.015831255424201274
+holding_year_2025_26,compounded_jun2025_may2026,High,Jun2025-May2026,0.6578175249896141
+holding_year_2025_26,compounded_jun2025_may2026,Low,Jun2025-May2026,0.5537532589667569
+holding_year_2025_26,compounded_jun2025_may2026,Benchmark,Jun2025-May2026,0.25968896628914573
+holding_year_2025_26,compounded_jun2025_may2026,BenchmarkScored,Jun2025-May2026,0.27312765296934893
+sensitivity,jan_may_2026_compounded,High,Base,0.3572119640525153
+sensitivity,jan_may_2026_compounded,Low,Base,0.3730432194767166
+sensitivity,jan_may_2026_compounded,Benchmark,Base,0.14781470344270775
+sensitivity,jan_may_2026_compounded,BenchmarkScored,Base,0.15309991366381182
+sensitivity,jan_may_2026_compounded,High,Spin-off months at price-only return,0.3572119640525153
+sensitivity,jan_may_2026_compounded,Low,Spin-off months at price-only return,0.3730432194767166
+sensitivity,jan_may_2026_compounded,Benchmark,Spin-off months at price-only return,0.1471774245993227
+sensitivity,jan_may_2026_compounded,BenchmarkScored,Spin-off months at price-only return,0.1524155875972817
+sensitivity,jan_may_2026_compounded,High,Hologic and Coterra final returns +494 bp,0.3572119640525153
+sensitivity,jan_may_2026_compounded,Low,Hologic and Coterra final returns +494 bp,0.3730432194767166
+sensitivity,jan_may_2026_compounded,Benchmark,Hologic and Coterra final returns +494 bp,0.14813716503451047
+sensitivity,jan_may_2026_compounded,BenchmarkScored,Hologic and Coterra final returns +494 bp,0.15344707868259588
+sensitivity,jan_may_2026_compounded,High,Hologic and Coterra final returns -494 bp,0.3572119640525153
+sensitivity,jan_may_2026_compounded,Low,Hologic and Coterra final returns -494 bp,0.3730432194767166
+sensitivity,jan_may_2026_compounded,Benchmark,Hologic and Coterra final returns -494 bp,0.14749228680482274
+sensitivity,jan_may_2026_compounded,BenchmarkScored,Hologic and Coterra final returns -494 bp,0.15275280053380813

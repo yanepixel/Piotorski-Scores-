@@ -132,7 +132,7 @@ def main():
     L.append(md_table(f[f.filing_lag_days > long_lag].sort_values("filing_lag_days", ascending=False)[["conm", "fyear", "datadate", "filing_date", "filing_lag_days"]]))
     L.append(f"\n## Fiscal-year changes and stub years (gap outside {cfg.STUB_MIN_DAYS}-{cfg.STUB_MAX_DAYS} days)\n")
     L.append(f"{len(stubs)} flagged, {int((stubs.days_since_prior < cfg.STUB_MIN_DAYS).sum())} short and {int((stubs.days_since_prior > cfg.STUB_MAX_DAYS).sum())} long. "
-             f"{int(stubs.fyr_changed.sum())} changed fiscal-year end. Treatment in `04_scores.py`: {cfg.STUB_EXCLUSION}. Listed in `clean_stub_years.csv`.\n")
+             f"{int(stubs.fyr_changed.sum())} changed fiscal-year end. Treatment in `05_scores.py`: {cfg.STUB_EXCLUSION}. Listed in `clean_stub_years.csv`.\n")
     L.append("## Sanity flags (never dropped)\n")
     L.append(f"- Negative assets: {int(f.neg_assets.sum())}. Negative sales: {int(f.neg_sale.sum())}, listed below.")
     L.append(f"- Year-over-year moves above {cfg.OUTLIER_YOY_RATIO}x, both years positive: at {int(f.outlier_at.sum())}, sale {int(f.outlier_sale.sum())}, adjusted shares {int(f.outlier_adj_shares.sum())}. Listed in `clean_outliers.csv`.\n")

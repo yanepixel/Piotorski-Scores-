@@ -23,8 +23,8 @@ TABLES = {
     "Compustat S&P index members":     "comp.idxcst_his",           # 01 (current members only)
     "Compustat company names":         "comp.company",              # 03
     "Compustat quarterly":             "comp.fundq",                # 08
-    "Compustat monthly security":      "comp.secm",                 # 09a
-    "Compustat security":              "comp.security",             # 09a
+    "Compustat monthly security":      "comp.secm",                 # 02c
+    "Compustat security":              "comp.security",             # 02c
 }
 
 

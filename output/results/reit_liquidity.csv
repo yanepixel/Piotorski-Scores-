@@ -1,0 +1,112 @@
+block,item,series,window,baseline,variant,note,change
+comparison,High_minus_Benchmark_annual,,Jun2005-Dec2025,0.009244531673802606,0.006379204272963706,scored-only benchmark; all-included beside,-0.0028653274008389002
+comparison,High_minus_BenchmarkAll_annual,,Jun2005-Dec2025,0.014207733679050788,0.00878720660509803,,-0.0054205270739527585
+comparison,information_ratio,,Jun2005-Dec2025,0.15221778231980537,0.10936894156768107,scored-only benchmark,-0.042848840752124306
+comparison,information_ratio_vs_all_included,,Jun2005-Dec2025,0.2269864766249754,0.14998162252233566,,-0.07700485410263974
+comparison,High_sharpe,,Jun2005-Dec2025,0.6274689614744485,0.6018891644695237,,-0.025579797004924854
+comparison,Benchmark_sharpe,,Jun2005-Dec2025,0.6464434837243144,0.6315008751398884,scored-only benchmark,-0.014942608584425976
+comparison,BenchmarkAll_sharpe,,Jun2005-Dec2025,0.6121465651489468,0.6121465651489468,,0.0
+comparison,High_CAGR,,Jun2005-Dec2025,0.12002544845573171,0.11425802502932547,,-0.005767423426406237
+comparison,Benchmark_CAGR,,Jun2005-Dec2025,0.11355697554260757,0.11075089899123047,scored-only benchmark,-0.0028060765513771013
+comparison,BenchmarkAll_CAGR,,Jun2005-Dec2025,0.10788997638016506,0.10788997638016506,,0.0
+comparison,Spread_annual,,Jun2005-Dec2025,0.012469478194080248,0.007344061879778681,,-0.005125416314301566
+comparison,High_beats_Benchmark_years,,Jun2005-Dec2025,10.0,9.0,scored-only benchmark; complete years only,-1.0
+comparison,High_beats_BenchmarkAll_years,,Jun2005-Dec2025,10.0,9.0,,-1.0
+comparison,complete_years,,Jun2005-Dec2025,20.0,20.0,,0.0
+comparison,High_turnover_two_way,,Jun2005-Dec2025,1.8000506947855655,1.79151252988691,,-0.008538164898655554
+comparison,High_names_median,,Jun2005-Dec2025,25.0,26.0,,1.0
+comparison,High_names_min,,Jun2005-Dec2025,14.0,15.0,,1.0
+comparison,Middle_names_median,,Jun2005-Dec2025,258.0,271.0,,13.0
+comparison,Low_names_median,,Jun2005-Dec2025,76.0,81.0,,5.0
+comparison,Low_names_min,,Jun2005-Dec2025,44.0,49.0,,5.0
+comparison,Benchmark_names_median,,Jun2005-Dec2025,403.0,403.0,Benchmark_names are scored-only counts,0.0
+comparison,Benchmark_names_min,,Jun2005-Dec2025,378.0,378.0,Benchmark_names are scored-only counts,0.0
+comparison,BenchmarkScored_names_median,,Jun2005-Dec2025,367.0,389.0,,22.0
+comparison,BenchmarkScored_names_min,,Jun2005-Dec2025,319.0,332.0,,13.0
+gap,cagr_gap,High_minus_Benchmark,Jun2005-Dec2025,0.012135472075566645,0.006368048649160407,"automatic HAC lag, t(T-k); lag 12 beside",-0.005767423426406237
+gap,cagr_gap,High_minus_BenchmarkScored,Jun2005-Dec2025,0.006468472913124135,0.0035071260380949987,"automatic HAC lag, t(T-k); lag 12 beside",-0.002961346875029136
+gap,hac_lag_automatic,High_minus_Benchmark,Jun2005-Dec2025,4.0,4.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+gap,hac_lag_automatic,High_minus_BenchmarkScored,Jun2005-Dec2025,4.0,4.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+gap,hac_lag_automatic,High_minus_Low,Jun2005-Dec2025,4.0,4.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+gap,mean_monthly_x12,High_minus_Benchmark,Jun2005-Dec2025,0.014207733679050788,0.00878720660509803,"automatic HAC lag, t(T-k); lag 12 beside",-0.0054205270739527585
+gap,mean_monthly_x12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.009244531673802606,0.006379204272963706,"automatic HAC lag, t(T-k); lag 12 beside",-0.0028653274008389002
+gap,mean_monthly_x12,High_minus_Low,Jun2005-Dec2025,0.012469478194080248,0.007344061879778681,"automatic HAC lag, t(T-k); lag 12 beside",-0.005125416314301566
+gap_test_4factor,alpha_x12_auto,High_minus_Benchmark,Jun2005-Dec2025,0.010570295929726083,0.006162103248952555,"automatic HAC lag, t(T-k); lag 12 beside",-0.004408192680773528
+gap_test_4factor,alpha_x12_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.005701809280807596,0.003231297961081837,"automatic HAC lag, t(T-k); lag 12 beside",-0.002470511319725759
+gap_test_4factor,alpha_x12_auto,High_minus_Low,Jun2005-Dec2025,0.006954512359136786,0.0022107474089961415,"automatic HAC lag, t(T-k); lag 12 beside",-0.004743764950140644
+gap_test_4factor,alpha_x12_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.010570295929726083,0.006162103248952555,"automatic HAC lag, t(T-k); lag 12 beside",-0.004408192680773528
+gap_test_4factor,alpha_x12_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.005701809280807596,0.003231297961081837,"automatic HAC lag, t(T-k); lag 12 beside",-0.002470511319725759
+gap_test_4factor,alpha_x12_lag12,High_minus_Low,Jun2005-Dec2025,0.006954512359136786,0.0022107474089961415,"automatic HAC lag, t(T-k); lag 12 beside",-0.004743764950140644
+gap_test_4factor,p_auto,High_minus_Benchmark,Jun2005-Dec2025,0.4410382429104602,0.628464364706204,"automatic HAC lag, t(T-k); lag 12 beside",0.18742612179574386
+gap_test_4factor,p_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.6662111690195769,0.7986777009246406,"automatic HAC lag, t(T-k); lag 12 beside",0.13246653190506374
+gap_test_4factor,p_auto,High_minus_Low,Jun2005-Dec2025,0.7155586346208391,0.9039425770651982,"automatic HAC lag, t(T-k); lag 12 beside",0.18838394244435908
+gap_test_4factor,p_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.398700527774414,0.5988319580801789,"automatic HAC lag, t(T-k); lag 12 beside",0.20013143030576486
+gap_test_4factor,p_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.6311626195656471,0.7815125052200006,"automatic HAC lag, t(T-k); lag 12 beside",0.15034988565435348
+gap_test_4factor,p_lag12,High_minus_Low,Jun2005-Dec2025,0.7263533060620713,0.9096595228439406,"automatic HAC lag, t(T-k); lag 12 beside",0.1833062167818693
+gap_test_4factor,t_auto,High_minus_Benchmark,Jun2005-Dec2025,0.7717114653631485,0.4845069351770307,"automatic HAC lag, t(T-k); lag 12 beside",-0.2872045301861178
+gap_test_4factor,t_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.4318827540295546,0.25533959456405114,"automatic HAC lag, t(T-k); lag 12 beside",-0.17654315946550347
+gap_test_4factor,t_auto,High_minus_Low,Jun2005-Dec2025,0.3648277106677715,0.12080898555577967,"automatic HAC lag, t(T-k); lag 12 beside",-0.2440187251119918
+gap_test_4factor,t_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.8454396565288067,0.526775572622864,"automatic HAC lag, t(T-k); lag 12 beside",-0.3186640839059427
+gap_test_4factor,t_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.48070196333302817,0.277657287918946,"automatic HAC lag, t(T-k); lag 12 beside",-0.20304467541408217
+gap_test_4factor,t_lag12,High_minus_Low,Jun2005-Dec2025,0.3503866823673113,0.11358680355237775,"automatic HAC lag, t(T-k); lag 12 beside",-0.23679987881493353
+gap_test_raw,p_auto,High_minus_Benchmark,Jun2005-Dec2025,0.3034218950375636,0.5021205160207909,"automatic HAC lag, t(T-k); lag 12 beside",0.19869862098322727
+gap_test_raw,p_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.49394704044287224,0.6247496891989567,"automatic HAC lag, t(T-k); lag 12 beside",0.13080264875608444
+gap_test_raw,p_auto,High_minus_Low,Jun2005-Dec2025,0.5254536031718086,0.697018546855676,"automatic HAC lag, t(T-k); lag 12 beside",0.17156494368386743
+gap_test_raw,p_lag12,High_minus_Benchmark,Jun2005-Dec2025,0.27402550203175435,0.4823972257693987,"automatic HAC lag, t(T-k); lag 12 beside",0.20837172373764434
+gap_test_raw,p_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.46550422106769335,0.6077215481301573,"automatic HAC lag, t(T-k); lag 12 beside",0.14221732706246398
+gap_test_raw,p_lag12,High_minus_Low,Jun2005-Dec2025,0.551452992558637,0.7207503492971828,"automatic HAC lag, t(T-k); lag 12 beside",0.16929735673854585
+gap_test_raw,t_auto,High_minus_Benchmark,Jun2005-Dec2025,1.0312810158706434,0.6721476095845884,"automatic HAC lag, t(T-k); lag 12 beside",-0.35913340628605495
+gap_test_raw,t_auto,High_minus_BenchmarkScored,Jun2005-Dec2025,0.6850663518870954,0.48974657140350797,"automatic HAC lag, t(T-k); lag 12 beside",-0.19531978048358745
+gap_test_raw,t_auto,High_minus_Low,Jun2005-Dec2025,0.6358679511234253,0.3898042832211861,"automatic HAC lag, t(T-k); lag 12 beside",-0.2460636679022392
+gap_test_raw,t_lag12,High_minus_Benchmark,Jun2005-Dec2025,1.0962864058539799,0.7035197527979395,"automatic HAC lag, t(T-k); lag 12 beside",-0.3927666530560403
+gap_test_raw,t_lag12,High_minus_BenchmarkScored,Jun2005-Dec2025,0.7309517968703947,0.5139883117821694,"automatic HAC lag, t(T-k); lag 12 beside",-0.21696348508822527
+gap_test_raw,t_lag12,High_minus_Low,Jun2005-Dec2025,0.596405185563469,0.357866147693898,"automatic HAC lag, t(T-k); lag 12 beside",-0.23853903786957098
+performance,CAGR,Benchmark,Jun2005-Dec2025,0.10788997638016506,0.10788997638016506,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,CAGR,BenchmarkScored,Jun2005-Dec2025,0.11355697554260757,0.11075089899123047,"automatic HAC lag, t(T-k); lag 12 beside",-0.0028060765513771013
+performance,CAGR,High,Jun2005-Dec2025,0.12002544845573171,0.11425802502932547,"automatic HAC lag, t(T-k); lag 12 beside",-0.005767423426406237
+performance,CAGR,Low,Jun2005-Dec2025,0.10835502099059013,0.10811882063507494,"automatic HAC lag, t(T-k); lag 12 beside",-0.00023620035551519258
+performance,CAGR,Middle,Jun2005-Dec2025,0.1115245656461612,0.10814695768389604,"automatic HAC lag, t(T-k); lag 12 beside",-0.003377607962265161
+performance,CAGR,RSP,Jun2005-Dec2025,0.09853143612161208,0.09853143612161208,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,CAGR,SPY,Jun2005-Dec2025,0.1088394982136136,0.1088394982136136,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,max_drawdown,Benchmark,Jun2005-Dec2025,-0.5064427819704311,-0.5064427819704311,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,max_drawdown,BenchmarkScored,Jun2005-Dec2025,-0.49175060504183077,-0.5010817925829061,"automatic HAC lag, t(T-k); lag 12 beside",-0.009331187541075314
+performance,max_drawdown,High,Jun2005-Dec2025,-0.4594451658444142,-0.47733123130868194,"automatic HAC lag, t(T-k); lag 12 beside",-0.017886065464267742
+performance,max_drawdown,Low,Jun2005-Dec2025,-0.5229887689669863,-0.5307392924292544,"automatic HAC lag, t(T-k); lag 12 beside",-0.007750523462268122
+performance,max_drawdown,Middle,Jun2005-Dec2025,-0.4873920184451228,-0.4957914127680517,"automatic HAC lag, t(T-k); lag 12 beside",-0.00839939432292891
+performance,max_drawdown,RSP,Jun2005-Dec2025,-0.5558668867104368,-0.5558668867104368,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,max_drawdown,SPY,Jun2005-Dec2025,-0.5079769991069322,-0.5079769991069322,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,months,Benchmark,Jun2005-Dec2025,247.0,247.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,months,BenchmarkScored,Jun2005-Dec2025,247.0,247.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,months,High,Jun2005-Dec2025,247.0,247.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,months,Low,Jun2005-Dec2025,247.0,247.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,months,Middle,Jun2005-Dec2025,247.0,247.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,months,RSP,Jun2005-Dec2025,247.0,247.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,months,SPY,Jun2005-Dec2025,247.0,247.0,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,sharpe,Benchmark,Jun2005-Dec2025,0.6121465651489468,0.6121465651489468,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,sharpe,BenchmarkScored,Jun2005-Dec2025,0.6464434837243144,0.6315008751398884,"automatic HAC lag, t(T-k); lag 12 beside",-0.014942608584425976
+performance,sharpe,High,Jun2005-Dec2025,0.6274689614744485,0.6018891644695237,"automatic HAC lag, t(T-k); lag 12 beside",-0.025579797004924854
+performance,sharpe,Low,Jun2005-Dec2025,0.5934054441031487,0.5937831888757873,"automatic HAC lag, t(T-k); lag 12 beside",0.00037774477263863293
+performance,sharpe,Middle,Jun2005-Dec2025,0.6440396720759524,0.6255281900929209,"automatic HAC lag, t(T-k); lag 12 beside",-0.01851148198303143
+performance,sharpe,RSP,Jun2005-Dec2025,0.5423123834101975,0.5423123834101975,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,sharpe,SPY,Jun2005-Dec2025,0.6599989606775511,0.6599989606775511,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,volatility,Benchmark,Jun2005-Dec2025,0.16261501138448725,0.16261501138448725,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,volatility,BenchmarkScored,Jun2005-Dec2025,0.16166009398596112,0.16144453568467002,"automatic HAC lag, t(T-k); lag 12 beside",-0.00021555830129110776
+performance,volatility,High,Jun2005-Dec2025,0.18146073952167752,0.1801741311172943,"automatic HAC lag, t(T-k); lag 12 beside",-0.001286608404383216
+performance,volatility,Low,Jun2005-Dec2025,0.17046066662007517,0.169860120489713,"automatic HAC lag, t(T-k); lag 12 beside",-0.0006005461303621729
+performance,volatility,Middle,Jun2005-Dec2025,0.15871486331506304,0.15848830910703368,"automatic HAC lag, t(T-k); lag 12 beside",-0.00022655420802936144
+performance,volatility,RSP,Jun2005-Dec2025,0.17002011880607837,0.17002011880607837,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+performance,volatility,SPY,Jun2005-Dec2025,0.14904432753182933,0.14904432753182933,"automatic HAC lag, t(T-k); lag 12 beside",0.0
+rows,rows_added,High,all formation dates,,37.0,counted against the literal baseline,
+rows,rows_added,Middle,all formation dates,,304.0,counted against the literal baseline,
+rows,rows_added,Low,all formation dates,,90.0,counted against the literal baseline,
+rows,rows_added,all,all formation dates,,431.0,,
+rows,headline_rows_that_changed_year_score_or_bucket,all,all formation dates,,0.0,,
+rows,baseline_rows_lost,all,all formation dates,,0.0,,
+reit_coverage,included_reit_rows,REIT,all formation dates,512.0,512.0,,0.0
+reit_coverage,reit_rows_scored,REIT,all formation dates,80.0,511.0,,431.0
+reit_coverage,reit_rows_using_substitute,REIT,all formation dates,0.0,431.0,,431.0
+reit_coverage,reit_rows_still_unscored,REIT,all formation dates,432.0,1.0,,-431.0
+reit_coverage,substitute_uncomputable_company_years_of_reit_names,REIT,FY range,,0.0,,
+signal,pass_pct_list_rows_using_it,F_DLIQUID_SUB,all formation dates,,48.027842227378194,,
+signal,pass_pct_company_years_where_computable,F_DLIQUID_SUB,FY range,,47.76902887139108,,
+null_return,hold_flat_months_used_in_any_series,,all,8.0,8.0,"approved cases only: General Growth 2009-05, Maxim 2007-11 to 2008-05",0.0

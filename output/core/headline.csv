@@ -1,0 +1,8 @@
+universe_label,portfolio,months,CAGR,volatility,sharpe,max_drawdown,avg_turnover_two_way
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",High,247,0.12002544845573193,0.18146073952167743,0.6274689614744483,-0.4594451658444141,1.8000506947855655
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Middle,247,0.11152456564616142,0.1587148633150629,0.6440396720759519,-0.4873920184451226,0.7967849467827398
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Low,247,0.10835502099059036,0.17046066662007506,0.5934054441031482,-0.5229887689669861,1.6024876978442368
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",Benchmark,247,0.10788997638016529,0.16261501138448714,0.6121465651489463,-0.5064427819704311,0.3317652632169054
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",BenchmarkScored,247,0.11355697554260757,0.161660093985961,0.6464434837243136,-0.49175060504183044,0.34215139654248244
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",RSP,247,0.0985314361216123,0.17002011880607829,0.5423123834101968,-0.5558668867104364,
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",SPY,247,0.10883949821361383,0.14904432753182922,0.6599989606775507,-0.5079769991069317,
