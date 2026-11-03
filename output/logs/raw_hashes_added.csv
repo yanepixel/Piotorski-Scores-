@@ -1,0 +1,5 @@
+file,source_table,rows,bytes,sha256,hashed_on,note
+comp_fundq.parquet,comp.fundq,85580,558968,f43e33dab53912416bad650368a84f8a464c0e2c93488508269bfeb5bcfc1290,2026-11-02,"hashed after the fact, not at pull time; matches the values recorded by the project audit"
+comp_co_filedate_quarterly.parquet,comp.co_filedate,62276,360099,12a0e53e471ff4f52ab07e35cb26c1a41aaebaf20650bbe05b015200e3634ceb,2026-11-02,"hashed after the fact, not at pull time; matches the values recorded by the project audit"
+comp_funda_reit_fields.parquet,comp.funda,20796,310504,1581cbaac6b786322f9332aa373b1c7e5d3fa20047e5a5255e45d2e677192b01,2026-11-02,"hashed after the fact, not at pull time; matches the values recorded by the project audit"
+comp_secm_extension.parquet,comp.secm,9392,264278,57c0386b2b34c15d592a0e471b8b16f43c2e7b0ce98c16ef44dffa14288e709e,2026-11-02,"hashed after the fact, not at pull time; matches the values recorded by the project audit"

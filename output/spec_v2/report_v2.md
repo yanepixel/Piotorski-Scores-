@@ -3,6 +3,8 @@
 **0 check failure(s).** 247 months, 2005-06 to 2025-12; last portfolio partial (7 of 12 months). Returns are net of costs; RSP and SPY are fund returns. Primary benchmark = every included name, equal weight, charged like the buckets; BenchmarkScored = scored names only (v1's benchmark).
 
 
+**Coverage.** 8414 included list rows from 930 unique companies on 21 formation dates (2005-05-31 to 2025-05-30); 7614 scored list rows from 857 unique companies. Unique companies by bucket: High 547, Middle 790, Low 441. Monthly returns 2005-06 to 2025-12 (247 months). No rows are dropped by this script.
+
 ## Headline: v2 beside v1
 
 | portfolio | v2_months | v2_CAGR | v2_volatility | v2_sharpe | v2_max_drawdown | v2_avg_turnover_two_way | v1_CAGR | v1_volatility | v1_sharpe | v1_max_drawdown | v1_avg_turnover_two_way |

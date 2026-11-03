@@ -33,10 +33,32 @@ def load_username():
     return mod.wrds_username()
 
 
+def coverage_log(field, log_name):
+    """--log-only: add unique-company counts and date ranges to the existing log from the stored raw file. No WRDS connection; the raw file is only read."""
+    q = pd.read_parquet(RAW_FILE)
+    base = pd.read_parquet(RAW / "comp_funda.parquet", columns=["gvkey", "datadate", "fyear"])
+    path = OUT / log_name
+    text = path.read_text(encoding="utf-8")
+    marker = "## Coverage (added from the stored file)"
+    if marker in text:
+        text = text[:text.index(marker)].rstrip("\n") + "\n"
+    sha = hashlib.sha256(RAW_FILE.read_bytes()).hexdigest().upper()
+    add = [marker, "",
+           f"- Stored file `{RAW_FILE.name}` read again; SHA-256 `{sha}`. This section was added later from the stored file, not at pull time.",
+           f"- Rows {len(q)}; unique companies (GVKEY) {q.gvkey.nunique()} (comp_funda: {base.gvkey.nunique()}); fiscal years {int(q.fyear.min())} to {int(q.fyear.max())}; year-ends {pd.to_datetime(q.datadate).min().date()} to {pd.to_datetime(q.datadate).max().date()}.",
+           f"- Non-null {field} on {int(q[field].notna().sum())} rows ({q.loc[q[field].notna(), 'gvkey'].nunique()} companies); null on {int(q[field].isna().sum())} rows. No rows were dropped by the pull."]
+    path.write_text(text + "\n" + "\n".join(add) + "\n", encoding="utf-8")
+    print("coverage section written to", path.name)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--overwrite", action="store_true", help="Replace the raw file. Raw files are write-once without this.")
+    ap.add_argument("--log-only", action="store_true", help="Do not pull: append unique-company counts and date ranges to the log from the stored raw file.")
     args = ap.parse_args()
+    if args.log_only:
+        coverage_log("prstkc", "pull_prstkc_log.md")
+        return
     if RAW_FILE.exists() and not args.overwrite:
         sys.exit(f"REFUSED: {RAW_FILE.name} exists and is write-once. Pass --overwrite to replace it.")
     OUT.mkdir(parents=True, exist_ok=True)

@@ -3,7 +3,13 @@ Piotroski F-Score Backtest — Top-500 S&P 500 proxy (WRDS)
 Locked rules. Do not edit after seeing results; any change = a new, labelled run.
 
 Descriptive only, not read by any script: DATA_SOURCE, UNIVERSE, UNIVERSE_BUFFER, HEADLINE_VERSION,
-LONG_SHORT_SPREAD, HEADLINE_RETURNS, PRIMARY_BENCHMARK, STANDARD_ERRORS, PROFITABILITY_SCREEN.
+LONG_SHORT_SPREAD, HEADLINE_RETURNS, PRIMARY_BENCHMARK, STANDARD_ERRORS, PROFITABILITY_SCREEN, HEADLINE_SPEC.
+NEWEY_WEST_LAGS and SIGNIFICANCE_T_STAT belong to v1; the spec_v2 scripts do not read them (see SPEC_V2).
+SPEC_V2 keys fallback_availability, primary_benchmark, hac_lag_rule, small_sample, primary_tests, multiple_testing and
+report_power each name the one behaviour the v2 code implements; scripts 12b and 14 check them with assertions and stop if
+they differ, so they are read but cannot switch a behaviour. All other SPEC_V2 keys are read and used.
+Additions after the first v2 returns (keys and comments only, no existing value changed): SPEC_V2 alpha_level, power_level,
+sensitivity_lags, sensitivity_small_sample_correction; HEADLINE_SPEC in the list above.
 """
 
 # ---------- Data source ----------
@@ -122,7 +128,7 @@ SECONDARY_BENCHMARKS = ["RSP", "SPY"]
 # ---------- Evaluation ----------
 FACTOR_MODEL = ["Mkt-RF", "SMB", "HML", "RMW", "CMA", "MOM"]   # Fama-French 5 + momentum
 STANDARD_ERRORS = "newey_west"
-NEWEY_WEST_LAGS = 12
+NEWEY_WEST_LAGS = 12                  # v1's fixed lag count; spec_v2 uses the automatic rule in SPEC_V2['hac_lag_rule'] and does not read this
 SIGNIFICANCE_T_STAT = 2.0
 SUBPERIODS = [("2005-06", "2015-05"), ("2015-06", "2025-12")]  # second period was to 2026-05; returns end 2025-12
 
@@ -206,13 +212,17 @@ SPEC_V2 = {                           # re-specification after external review; 
     "fallback_availability": "exclude",  # a firm-year with no real 10-K filing date is unscorable; no 120-day fallback
     "availability_buffer_days": 3,    # filing date + this many calendar days must be on or before the formation date; an assumption
     "primary_benchmark": "equal_weight_all_included",   # scored and unscored included names; the scored-only benchmark is reported beside it
-    "charge_every_trade": True,       # mid-period reinvestment after an exit is charged at TRANSACTION_COST_BPS like any other trade
-    "hac_lag_rule": "newey_west_1994_automatic",        # floor(4 * (T / 100) ** (2 / 9)), replaces the fixed 12 lags
+    "charge_every_trade": True,       # mid-period reinvestment after an exit is charged TRANSACTION_COST_BPS on the value reinvested, one side (the purchase), in the exit month; the exit itself is not a trade and an exit in the final holding month needs no reinvestment (CLAUDE.md 8f clarifications 7 and 10)
+    "hac_lag_rule": "newey_west_1994_automatic",        # the fixed formula floor(4 * (T / 100) ** (2 / 9)), which replaces the fixed 12 lags; NOT the data-dependent Newey-West (1994) bandwidth the key name suggests
     "small_sample": "t_distribution_T_minus_k",         # critical values and p-values from t with T - k degrees of freedom
     "primary_tests": ["raw_excess_vs_primary_benchmark", "mkt_smb_hml_mom"],   # six-factor alpha is secondary because RMW overlaps the screen
     "multiple_testing": "holm_over_prespecified_family",   # family: full period and the two SUBPERIODS from the original config
     "report_power": True,             # minimum detectable excess return and alpha at 80% power, 5% two-sided
-    "sensitivities": ["hac_lag_12", "scored_only_benchmark"],   # reported beside, never used to choose
+    "sensitivities": ["hac_lag_12", "scored_only_benchmark"],   # as locked; the run also reports lag 6 and the T/(T-k) correction (keys below), all reported beside, never used to choose
+    "alpha_level": 0.05,             # added after the first v2 returns, value already used by script 14: size of the power calculation
+    "power_level": 0.80,             # added after the first v2 returns, value already used by script 14
+    "sensitivity_lags": [6, 12],     # added after the first v2 returns: the two extra lag counts that script 14 reports beside the automatic lag
+    "sensitivity_small_sample_correction": True,   # added after the first v2 returns: also report the automatic lag with covariance multiplied by T / (T - k)
 }
 BUFFER_FIRST_LIST = "top_500"       # 2005 has no history; membership tracks PERMCO on the pre-exclusion ranking
 BUFFER_NULL_RETURN_RULE = "hold_flat" # no return, not an exit; sold at last value at the next rebalance: Comverse Technology, 2007-02 to 2007-05

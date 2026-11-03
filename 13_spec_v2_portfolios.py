@@ -230,6 +230,9 @@ def main():
     L = [f"# spec_v2 portfolios ({'net issuance rule, primary' if rule == 'net' else 'literal issuance rule, sensitivity'}): {label}\n",
          f"**{len(failures)} check failure(s).** {len(small)} portfolio-dates under {cfg.MIN_BUCKET_NAMES} names (flag only).\n"] + [f"- FAIL: {x}" for x in failures] + [""]
     L.append(f"`portfolio_returns_v2.csv`: {len(table)} months, {table.month.iloc[0]} to {table.month.iloc[-1]}, net of costs unless `_gross`. Benchmark = all included names ({int(bm.sum())} company-dates); BenchmarkScored = scored names ({int(sc.sum())}). The {cfg.LAST_FORMATION_YEAR} portfolio is partial ({int(table.partial_period.sum())} of {cfg.HOLDING_MONTHS} months).\n")
+    uniq = inc.groupby("bucket").permco.nunique().to_dict()
+    L.append(f"Coverage: {len(inc)} included company-dates from {inc.permco.nunique()} unique companies on {inc.formation_date.nunique()} formation dates, {inc.formation_date.min().date()} to {inc.formation_date.max().date()}; "
+             f"unique companies by bucket (Unscored = included but not scored): {uniq}. Holding months {table.month.iloc[0]} to {table.month.iloc[-1]}.\n")
     L.append("## Bucket counts\n")
     L.append(md_table(counts.pivot(index="formation_date", columns="portfolio", values="names")[PORTS].reset_index()))
     L.append(f"\nUnder {cfg.MIN_BUCKET_NAMES} names:\n")

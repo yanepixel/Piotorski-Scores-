@@ -1,4 +1,6 @@
 universe_label,figure,source
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",+0.19%,"output/archive_v1/writeup_v1.md [post-hoc all-included comparison, v1]"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",0.22,"output/archive_v1/writeup_v1.md [post-hoc all-included comparison, v1]"
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",+0.08%,output/spec_v2/tests_v2.csv [High | raw excess vs primary benchmark (all included) | full]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",+0.10,output/spec_v2/tests_v2.csv [High | raw excess vs primary benchmark (all included) | full]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",0.92,output/spec_v2/tests_v2.csv [High | raw excess vs primary benchmark (all included) | full]
@@ -173,6 +175,19 @@ universe_label,figure,source
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",11.44%,output/spec_v2/subperiods_v2.csv [2015-06 to 2025-12 BenchmarkScored_CAGR]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",-0.92%,output/spec_v2/subperiods_v2.csv [2015-06 to 2025-12 High_minus_Benchmark_annual]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",-1.44%,output/spec_v2/subperiods_v2.csv [2015-06 to 2025-12 Spread_annual]
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",1,assumed number of tests
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",1.98,"output/spec_v2/tests_v2.csv [t.ppf(1 - 0.05 / (2N), df) with the 2015-25 four-factor alpha df]"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",6,assumed number of tests
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",2.68,"output/spec_v2/tests_v2.csv [t.ppf(1 - 0.05 / (2N), df) with the 2015-25 four-factor alpha df]"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",20,assumed number of tests
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3.09,"output/spec_v2/tests_v2.csv [t.ppf(1 - 0.05 / (2N), df) with the 2015-25 four-factor alpha df]"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",50,assumed number of tests
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3.37,"output/spec_v2/tests_v2.csv [t.ppf(1 - 0.05 / (2N), df) with the 2015-25 four-factor alpha df]"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",100,assumed number of tests
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3.58,"output/spec_v2/tests_v2.csv [t.ppf(1 - 0.05 / (2N), df) with the 2015-25 four-factor alpha df]"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",250,assumed number of tests
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3.84,"output/spec_v2/tests_v2.csv [t.ppf(1 - 0.05 / (2N), df) with the 2015-25 four-factor alpha df]"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",2.68,output/spec_v2/tests_v2.csv [t.ppf N=6]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",800,output/spec_v2/drops_by_date_v2.csv [sum d_unscored_v2]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)","8,414",output/spec_v2/drops_by_date_v2.csv [sum included]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",53.9%,output/spec_v2/drops_by_date_v2.csv [unscored_in_sectors_40_60_v2 / d_unscored_v2]
@@ -207,6 +222,8 @@ universe_label,figure,source
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",0.50%,output/spec_v2/versus_v2.csv [BenchmarkScored vs Benchmark]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",6,output/spec_v2/scores_checks_v2.md [section 4 v1 fallback rows]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",43,output/spec_v2/scores_checks_v2.md [section 5 (ii)]
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",4,data/clean/formation.parquet + spec_v2/formation_v2.parquet [stale total]
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3,data/clean/formation.parquet + spec_v2/formation_v2.parquet [none total]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)","8,414",output/spec_v2/list_rows_by_bucket_v1_v2.csv [sum v1_rows]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)","1,553",output/spec_v2/list_rows_by_bucket_v1_v2.csv [High v1_rows]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)","5,290",output/spec_v2/list_rows_by_bucket_v1_v2.csv [Middle v1_rows]
@@ -251,8 +268,6 @@ universe_label,figure,source
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3,data/clean/formation.parquet + spec_v2/formation_v2.parquet [fallback stale]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3,data/clean/formation.parquet + spec_v2/formation_v2.parquet [fallback none]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",43,data/clean/formation.parquet + spec_v2/formation_v2.parquet [older total]
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",4,data/clean/formation.parquet + spec_v2/formation_v2.parquet [stale total]
-"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",3,data/clean/formation.parquet + spec_v2/formation_v2.parquet [none total]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",45,output/spec_v2/scores_checks_v2.md [section 5 total buffer cases]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",1,output/spec_v2/scores_checks_v2.md [section 5 stale]
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",1,output/spec_v2/scores_checks_v2.md [section 5 none]
@@ -277,6 +292,10 @@ universe_label,figure,source
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",55,HAND-COPIED: same
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",97.3%,HAND-COPIED: same
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",0.45%,HAND-COPIED: same
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",252,"HAND-COPIED: the project audit's trial log (a report in verification/, section 4): distinct reported alpha or excess-return t-statistics in the project's tables"
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",288,HAND-COPIED: same audit trial log: re-estimates of the 96 v2 tests under the three other standard-error conventions
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",400,HAND-COPIED: same audit trial log: about 400 t-statistics counting audit runs
+"Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",250,HAND-COPIED: same audit trial log: about 250 in the tables
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",9,HAND-COPIED: number of Piotroski tests
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",21,HAND-COPIED: number of yearly lists (2005-2025)
 "Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy)",20,HAND-COPIED: complete holding years

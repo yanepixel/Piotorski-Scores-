@@ -6,12 +6,12 @@ A research test, not a trading system. The universe is the **Top 500 US common s
 
 ## The answer
 
-No. The headline is **spec_v2**, a re-specification after an external review (income before extraordinary items, a net-issuance test, no 120-day fallback, a 3-day filing buffer, an all-included benchmark, automatic Newey-West lag, Holm adjustment and power). From June 2005 to December 2025, High (scores 8-9) earned +0.08% a year more than an equal-weighted portfolio of every included company after costs (t-stat 0.10), with a four-factor alpha of -0.15% a year (t -0.13). Against scored companies only the excess is -0.42%. The test could not reliably detect an edge under 2.13% a year. The one pre-specified test below 0.05 after multiple-testing adjustment is the 2015-25 four-factor alpha (-3.38% a year, adjusted p 0.047), which is borderline under one standard-error convention and has the opposite sign in 2005-15, so it is weak evidence only. The first specification (v1) is kept unchanged in `output/archive_v1/`. The full answer, method, limits and the later labelled runs are in [`output/writeup.md`](output/writeup.md).
+No. The headline is **spec_v2**, a re-specification after an external review (income before extraordinary items, a net-issuance test, no 120-day fallback, a 3-day filing buffer, an all-included benchmark, a lag length for the Newey-West standard errors, which allow for returns correlated over time, set by a formula; the Holm adjustment, a correction for looking at several tests at once; and power, the smallest true effect the test would detect 80% of the time). From June 2005 to December 2025, High (scores 8-9) earned +0.08% a year more than an equal-weighted portfolio of every included company after costs (t-stat 0.10, the number of standard errors the estimate sits from zero), with a four-factor alpha, the return left after market, size, value and momentum are removed, of -0.15% a year (t -0.13). Against scored companies only the excess is -0.42%. The test could not reliably detect an edge under 2.13% a year. The one pre-specified test below 0.05 after multiple-testing adjustment is the 2015-25 four-factor alpha (-3.38% a year, adjusted p 0.047, the p-value after the Holm adjustment), which is borderline under one standard-error convention and has the opposite sign in 2005-15, so it is weak evidence only. The first specification (v1) is kept unchanged in `output/archive_v1/`. The full answer, method, limits and the later labelled runs are in [`output/writeup.md`](output/writeup.md).
 
 ## What you need
 
 - Python 3.13 and the packages in `requirements.txt`: `pip install -r requirements.txt`.
-- A WRDS account with Compustat, CRSP and Fama-French access. The data is licensed, so `data/` is not in the repository, and the scripts pull it.
+- A WRDS account with Compustat (company accounts), CRSP (monthly stock prices and returns) and Fama-French (published return factors) access, including the quarterly, monthly-security and company-name tables that `python 00_test_wrds.py` checks. `crsp.msp500list` is expected to print NO ACCESS: S&P 500 membership history is not available, which is why the universe is a market-cap proxy. The data is licensed, so `data/` is not in the repository, and the scripts pull it.
 
 ## WRDS login
 
@@ -55,7 +55,7 @@ A script exits with code 1 if one of its checks fails, and most write their outp
 
 Order for the headline: scripts 00 to 07 give the data, universe and the v1 files that v2 reads; then `12a`, `12c`, `12b` (literal first, then net, because the net report quotes the literal pass rate), `13`, `14`, `16` (each net, then literal), `15`, `17`. `08` to `11` (robustness, REIT liquidity substitute, 2026 extension, long/short) are v1-specification runs: they are **not rerun under v2**, and the write-up labels them that way. `07_evaluate.py` and the other v1 scripts are unchanged and still write the v1 tables, but `output/writeup.md` and `output/checkpoint3_results.md` were moved: the v1 versions are in `output/archive_v1/`, so rerunning `07_evaluate.py` recreates `output/checkpoint3_results.md` in `output/`.
 
-The brief has three stop points for human review (Checkpoints 1, 2 and 3 in `CLAUDE.md`). They have been passed for this result; a rerun does not pause for them.
+The brief has three stop points for human review (Checkpoints 1, 2 and 3 in `CLAUDE.md`). They were passed for the v1 results. spec_v2 was approved separately by the user as the headline (`CLAUDE.md` section 8f); a rerun does not pause for any of them.
 
 ## Where outputs go
 
@@ -65,12 +65,12 @@ The brief has three stop points for human review (Checkpoints 1, 2 and 3 in `CLA
 | `data/clean/` | Universe, cleaned fundamentals, scores, formation lists |
 | `output/writeup.md` | The write-up for spec_v2 (the headline): start here |
 | `output/archive_v1/` | The superseded first specification's write-up and Checkpoint 3 results, unchanged apart from a note at the top |
-| `output/spec_v2/` | spec_v2 tables, reports and checks; `literal_sensitivity/` holds the same run under the literal issuance rule |
+| `output/spec_v2/` | spec_v2 tables, reports and checks. In the project folder, `literal_sensitivity/` holds the full run under the literal issuance rule; the public repository carries only its `headline_v2.csv` and `tests_v2.csv` |
 | `output/tables/`, `output/charts/` (v1) | The v1 tables and charts, unchanged; the headline is in `output/spec_v2/` |
-| `output/logs/` | Row counts, drop reasons and checks for each script |
+| `output/logs/` | Row counts, drop reasons and checks for the v1 scripts 00 to 11, and `raw_hashes_added.csv`. The spec_v2 scripts (12a to 17) write their logs and checks into `output/spec_v2/` instead (`pull_*_log.md`, `scores_checks_v2.md`, `portfolio_checks_v2.md`, `report_v2.md`, `drops_summary_v2.md`, `numcheck_v2.md`). In the public repository `output/logs/` holds only `raw_hashes_added.csv`, and of the spec_v2 files named here only `report_v2.md`, `drops_summary_v2.md` and `numcheck_v2.md` are present. |
 | `output/robustness/` | Each robustness variant and its report |
 | `output/extension_2026/`, `output/reit_liquidity_substitute/`, `output/long_short_100_100/` | Labelled runs, none of them the headline |
-| `verification/` | Independent rebuilds and audits |
+| `verification/` | Reports of independent rebuilds and audits. The public repository carries the reports only (some trimmed of company-level values); the rebuild and audit scripts and their data are not in it |
 
 ## Raw data is write-once
 

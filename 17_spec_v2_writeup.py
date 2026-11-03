@@ -72,6 +72,9 @@ v1reg = pd.read_csv(OUTPUT / "tables" / "factor_regressions.csv")
 v1yr = pd.read_csv(OUTPUT / "tables" / "year_by_year.csv")
 checks_md = (V2 / "scores_checks_v2.md").read_text(encoding="utf-8")
 v1_text = (OUTPUT / "archive_v1" / "writeup_v1.md").read_text(encoding="utf-8")
+import re as _re
+_m = _re.search(r"High's raw gap is ([+-][\d.]+%) a year \(t ([\d.]+)\)", v1_text)
+v1_allinc = (reg(_m.group(1), "output/archive_v1/writeup_v1.md [post-hoc all-included comparison, v1]"), reg(_m.group(2), "output/archive_v1/writeup_v1.md [post-hoc all-included comparison, v1]"))
 
 FPSRC = "data/clean/formation.parquet + spec_v2/formation_v2.parquet"
 S = lambda f, c="": f"output/spec_v2/{f}" + (f" [{c}]" if c else "")
@@ -97,6 +100,9 @@ HAND = {
     "0.017": "Piotroski (2000) Table 4, large firms, High minus All, as given by the project lead", "0.872": "Piotroski (2000) Table 4, large firms t-statistic, as given by the project lead",
     "0.088": "Piotroski (2000) Table 4, small firms, High minus All", "2.456": "Piotroski (2000) Table 4, small firms t-statistic",
     "1,480": "restatement test, verification/data_audit_phase2_3.md via the v1 write-up", "98.5%": "same", "0.2%": "same", "55": "same", "97.3%": "same", "0.45%": "same",
+    "252": "the project audit's trial log (a report in verification/, section 4): distinct reported alpha or excess-return t-statistics in the project's tables",
+    "288": "same audit trial log: re-estimates of the 96 v2 tests under the three other standard-error conventions",
+    "400": "same audit trial log: about 400 t-statistics counting audit runs", "250": "same audit trial log: about 250 in the tables",
     "9": "number of Piotroski tests", "21": "number of yearly lists (2005-2025)", "20": "complete holding years",
 }
 
@@ -165,13 +171,13 @@ w(f"**Status of this document.** spec_v2 is the headline. It re-specifies the fi
 
 # ---- answer ----
 w("## The answer\n")
-w(f"No. Buying the financially strongest companies in this universe, those with an F-score of 8 or 9, did not beat the market of the same stocks. Measured against an equal-weighted portfolio of every included company, "
-  f"High earned {pct(ex.estimate_annual, TT(ex), 2, True)} a year more after costs (t-stat {num(ex.t, TT(ex), 2, True)}, p {num(ex.p_value, TT(ex), 2)}). After accounting for market, size, value and momentum, "
-  f"its alpha was {pct(al.estimate_annual, TT(al), 2, True)} a year (t {num(al.t, TT(al), 2, True)}). Neither is distinguishable from zero, and this test could not have seen a small edge: at 80% power the smallest excess return it could reliably detect is "
+w(f"No. Buying the financially strongest companies in this universe, those with an F-score (a 0-9 count of financial-health tests a company passes) of 8 or 9, did not beat the market of the same stocks. Measured against an equal-weighted portfolio of every included company, "
+  f"High (the portfolio of companies scoring 8 or 9) earned {pct(ex.estimate_annual, TT(ex), 2, True)} a year more after costs (t-stat, the number of standard errors the estimate sits from zero, {num(ex.t, TT(ex), 2, True)}; p-value, the chance of a result at least this far from zero if the true edge were zero, {num(ex.p_value, TT(ex), 2)}). After accounting for market, size, value and momentum, "
+  f"its alpha (the return left over once those patterns are removed) was {pct(al.estimate_annual, TT(al), 2, True)} a year (t {num(al.t, TT(al), 2, True)}). Neither is distinguishable from zero, and this test could not have seen a small edge: at 80% power (the smallest true effect the test would detect 80% of the time) the smallest excess return it could reliably detect is "
   f"{pct(ex.mde_80pct_power_annual, TT(ex))} a year, and the 95% range for the excess is {pct(ci_ex[0], srcCI, 2, True)} to {pct(ci_ex[1], srcCI, 2, True)}, so a true edge of up to about {pct(ci_ex[1], srcCI, 1, True)} a year cannot be ruled out. "
   f"The benchmark choice matters to the sign: against scored companies only, High's excess is {pct(exs.estimate_annual, TT(exs), 2, True)} a year (t {num(exs.t, TT(exs), 2, True)}), because the unscored companies (mostly REITs and real estate) lagged. "
   f"High beat the all-included benchmark in {int(hit_p)} of {len(done)} complete years. In the second half, June 2015 to December 2025, High's four-factor alpha was {pct(al2.estimate_annual, TT(al2), 2, True)} a year (t {num(al2.t, TT(al2), 2, True)}); "
-  f"it is the only one of the six pre-specified tests that survives the multiple-testing adjustment (adjusted p {num(al2.holm_adjusted_p, TT(al2), 3)}), narrowly, and not under every way of computing the standard error (see Results). "
+  f"it is the only one of the six pre-specified tests that survives the Holm adjustment (a correction for looking at several tests at once; adjusted p {num(al2.holm_adjusted_p, TT(al2), 3)}), narrowly, and not under every way of computing the standard error (Newey-West, which allows for returns correlated over time, with a choice of how many months to allow; see Results). "
   f"With the opposite sign in 2005-15, that is weak evidence of a later-period shortfall, not a finding of failure. This tests large US companies, not the cheap, smaller companies Piotroski studied, so it does not test his original claim.\n")
 
 # ---- terms ----
@@ -193,6 +199,11 @@ for line in [
     "**Alpha:** return left after accounting for those factors, stated per year.",
     "**t-stat / p-value:** how many standard errors a number is from zero; the chance of a result at least this far from zero if the true value were zero.",
     "**Newey-West (HAC):** standard errors adjusted for returns that are correlated over time. The number of months allowed (the lag) is set by a formula, 4 here.",
+    "**Degrees of freedom / t distribution:** the t distribution is the bell-shaped curve used to turn a t-stat into a p-value when the sample is limited; its degrees of freedom, T - k, are the T months less the k coefficients estimated, and fewer degrees of freedom mean fatter tails.",
+    "**T/(T-k) correction:** an optional small-sample adjustment that multiplies the variance of the estimates by T / (T - k); it is reported as a sensitivity, not used in the headline.",
+    "**Compustat / CRSP:** two commercial databases, accessed through WRDS: Compustat holds company accounts (the annual reports), and CRSP (Center for Research in Security Prices) holds monthly stock prices and returns, including delistings.",
+    "**RSP and SPY:** exchange-traded funds that track the equal-weighted and the cap-weighted S&P 500, shown for context only.",
+    "**Formation date / list row:** the formation date is the last trading day of May, when the portfolios are formed; a list row is one company on one formation date's list.",
     "**Holm adjustment:** a correction for looking at several tests at once; it raises p-values so that the chance of any false positive in the family stays at 5%.",
     "**Power / minimum detectable effect:** the smallest true effect the test would detect 80% of the time at the 5% level.",
     "**REIT:** real estate investment trust, a company that mainly owns property or property loans and passes most income to shareholders.",
@@ -209,18 +220,18 @@ w("## Method\n")
 w("All rules are in `config.py` (`SPEC_V2`) and the decisions in `CLAUDE.md` section 8f, which were committed before any v2 return was read; the exact sequence is under Timing of the specification. The universe, formation dates, buckets and holding period are unchanged from v1.\n")
 for line in [
     "**Universe:** on the last trading day of each May, 2005-2025, the top 500 US-incorporated common stocks on NYSE, Nasdaq or NYSE American by market cap, rebuilt from data on that date. Financials and utilities are removed after ranking.",
-    "**Scores:** the nine Piotroski tests from Compustat annual data, fiscal years 2004-2024, with five changes from v1: (1) profitability and accruals use income before extraordinary items (`ib`), as in the paper, not net income; "
+    "**Scores:** the nine Piotroski tests from Compustat annual data (company accounts), fiscal years 2004-2024, with five changes from v1: (1) profitability and accruals use income before extraordinary items (`ib`), as in the paper, not net income; "
     "(2) the no-issuance test is passed when common stock issued less common stock repurchased (`sstk - prstkc`) is zero or negative, with a missing value counting as zero and negative values used as reported, instead of v1's share-count test with a 2% tolerance; "
     "(3) a no-debt company passes the leverage test only where the prior-year change is computable; (4) a firm-year with no real 10-K filing date is not scored, with no year-end-plus-120-days fallback; "
     "(5) a filing counts only if its date plus 3 calendar days is on or before the formation date (an assumption). If the newest year fails the date test, the latest earlier scored year is used if no more than 18 calendar months old. "
     "Leverage uses long-term debt only, as in v1. Any uncomputable signal still drops the company-year.",
-    "**Portfolios:** equal weight at formation, held 12 months from June. Returns include delisting returns, and a delisted stock's value goes pro rata to the rest.",
+    "**Portfolios:** equal weight at formation, held 12 months from June. Returns come from CRSP (monthly stock prices) and include delisting returns, and a delisted stock's value goes pro rata to the rest.",
     "**Costs:** 10 basis points (0.10%) on each dollar bought or sold at each rebalance, and also on the value reinvested after a mid-period exit, charged one side in the exit month (v1 did not charge this). "
     f"High's costs averaged {pct(cost_high, S('portfolio_turnover_v2.csv', 'High cost_rebalance + reinvestment_cost_total, mean over rebalances after the first'))} a year, of which {pct(reinv_high, S('portfolio_turnover_v2.csv', 'High reinvestment_cost_total mean'), 3)} is reinvestment.",
-    "**Benchmarks:** primary = all included names, scored or not, held with their actual returns and charged like the buckets; the scored-only benchmark is reported beside it. RSP and SPY are fund returns. "
+    "**Benchmarks:** primary = all included names, scored or not, held with their actual returns and charged like the buckets; the scored-only benchmark is reported beside it. RSP and SPY are fund returns (exchange-traded funds tracking the equal-weighted and the cap-weighted S&P 500). "
     "Two included names with no return for some months and no exit (Maxim Integrated, November 2007 to May 2008; General Growth Properties, May 2009) are held flat at 0%, uncharged, in the all-included benchmark only; any other missing return would have stopped the run.",
     f"**Tests:** two primary tests of High, set in `SPEC_V2`: (1) its raw annualised excess return over the all-included benchmark; (2) its alpha on market, size, value and momentum. Standard errors are Newey-West with the automatic lag floor(4 x (T/100)^(2/9)), "
-    f"which is {int(nums['hac_lags_full'])} for the full period and for each subperiod (T = {cnt(n_months, S('headline_v2.csv', 'v2_months'))} months in total), with p-values from a t distribution with T - k degrees of freedom. "
+    f"which is {int(nums['hac_lags_full'])} for the full period and for each subperiod (T = {cnt(n_months, S('headline_v2.csv', 'v2_months'))} months in total), with p-values from a t distribution with T - k degrees of freedom (the T months less the k coefficients estimated). "
     "Holm adjustment is over one family of six p-values: the two tests times the full period and the two subperiods. The six-factor alpha is secondary because the profitability factor overlaps the screen. Power is reported at 80% and 5% two-sided.",
 ]:
     w(f"- {line}")
@@ -291,6 +302,19 @@ for r in subs.itertuples():
 w(md_rows(["Period", "Months", "High CAGR", "All-included benchmark CAGR", "Scored-only benchmark CAGR", "High excess vs all-included", "Spread a year"], rows))
 w("")
 
+# ---- how many tests ----
+w("## How many tests were run\n")
+crit = {n_: st.t.ppf(1 - 0.05 / (2 * n_), al2.df) for n_ in [1, 6, 20, 50, 100, 250]}
+w("The Holm adjustment above covers six tests chosen in advance. It does not cover everything the project has looked at. In all, the project has reported about "
+  f"{HAND and '250'} alpha or excess-return t-statistics in its own tables ({HAND and '252'} distinct ones, plus {HAND and '288'} re-estimates of the v2 tests under other standard-error conventions), and about {HAND and '400'} counting audit runs, "
+  "most of them on the same few return series, so they are far from independent. The table gives the critical |t| for a 5% family-wise level (Bonferroni, t distribution with the second-half degrees of freedom) if that many tests were counted.\n")
+w(md_rows(["Tests counted", "Critical |t|"], [[cnt(n_, "assumed number of tests"), num(v_, S("tests_v2.csv", "t.ppf(1 - 0.05 / (2N), df) with the 2015-25 four-factor alpha df"))] for n_, v_ in crit.items()]))
+w(f"\nThe second-half four-factor alpha as run has t {num(al2.t, TT(al2), 2, True)}, which clears the six-test threshold ({num(crit[6], S('tests_v2.csv', 't.ppf N=6'))}) and not a threshold of about 3, which is where {cnt(20, 'assumed number of tests')} or more counted tests would put it. "
+  f"Its t is {num(a2.lag_corr_t, TT(a2), 2, True)} with the T/(T-k) correction, {num(getattr(a2, 'lag6_t'), TT(a2), 2, True)} at lag 6 and {num(getattr(a2, 'lag12_t'), TT(a2), 2, True)} at lag 12. "
+  "All the |t| values of 3 or more in the project are shortfalls of High against the benchmark or the factor model, none is an edge, and most are variants of the same second-half series.\n")
+w("**No period was held out.** The whole of June 2005 to December 2025 was seen in v1 before v2 was specified, and the January to May 2026 extension (a v1-specification run) was added after the v1 results and after the second-half weakness was known, so it is not an untouched test; at five months it could not support an alpha test anyway. "
+  "The order in which v1's rules and results were set rests on the project lead's account, and no file can show it. The v2 specification and its test family were committed before any v2 return was read (see the Timing section).\n")
+
 # ---- both benchmarks ----
 w("## The two benchmarks\n")
 unsc = reasons.shape[0]
@@ -323,7 +347,7 @@ for lab, k in [("High", "High"), ("Middle", "Middle"), ("Low", "Low")]:
 w(md_rows(["Portfolio", "Net rule CAGR", "Excess vs all-included", "Literal rule CAGR", "Excess vs all-included"], rows))
 w(f"\nUnder the literal rule High's excess is {pct(lit_ex.estimate_annual, TT(lit_ex, 'literal_sensitivity/tests_v2.csv'), 2, True)} (t {num(lit_ex.t, TT(lit_ex, 'literal_sensitivity/tests_v2.csv'), 2, True)}) and its four-factor alpha {pct(lit_al.estimate_annual, TT(lit_al, 'literal_sensitivity/tests_v2.csv'), 2, True)} "
   f"(t {num(lit_al.t, TT(lit_al, 'literal_sensitivity/tests_v2.csv'), 2, True)}); High beat the all-included benchmark in {int(round(lit_hit * 20))} of 20 complete years. That High bucket is thin and unusual (it selects firms that issued nothing; {cnt(byb_lit.loc['High'].v2_rows, S('list_rows_by_bucket_v1_v2_literal.csv', 'High v2_rows'))} list rows against {cnt(byb.loc['High'].v2_rows, S('list_rows_by_bucket_v1_v2.csv', 'High v2_rows'))} under the net rule), "
-  "so the sign here says little. The full tables are in `output/spec_v2/literal_sensitivity/`.\n")
+  "so the sign here says little. In the project folder the full tables are in `output/spec_v2/literal_sensitivity/`; the public repository carries only `headline_v2.csv` and `tests_v2.csv` from it.\n")
 w(f"**The net signal drifts with the year.** Its pass rate over scored company-years was {num(eq_scored.loc[2004], S('eq_offer_pass_by_year.csv', 'FY2004 v2_eq_offer_pass_pct_scored'), 1)}% for fiscal 2004 and "
   f"{num(eq_scored.loc[2022], S('eq_offer_pass_by_year.csv', 'FY2022 v2_eq_offer_pass_pct_scored'), 1)}% for fiscal 2022 ({num(eq_scored.loc[2024], S('eq_offer_pass_by_year.csv', 'FY2024'), 1)}% for 2024), probably because buybacks grew. It is not degenerate in level, "
   "but part of what it separates is the filing year, not the company within a year. Missing `prstkc` with positive `sstk` counts as no buyback, so those rows fail; the scores report sizes that choice.\n")
@@ -336,14 +360,15 @@ w(f"v1 reported High at {pct(v1h.CAGR, 'output/tables/performance.csv [High CAGR
   f"{pct(v1vsh.excess_return_annual, 'output/tables/versus_benchmark.csv [High excess_return_annual, v1]', 2, True)} a year. v2 reports High at {pct(head.loc['High'].v2_CAGR, S('headline_v2.csv', 'High v2_CAGR'))}, with an excess of "
   f"{pct(ex.estimate_annual, TT(ex), 2, True)} against the all-included benchmark and {pct(exs.estimate_annual, TT(exs), 2, True)} against the scored-only one. The sign of the headline excess flipped from negative to slightly positive because the primary benchmark changed, "
   f"not because High changed: High's own return moved by {pct(head.loc['High'].v2_CAGR - v1perf.loc['High'].CAGR, 'headline_v2.csv v2_CAGR minus output/tables/performance.csv High CAGR', 2, True)} of CAGR, "
-  f"while the benchmark that includes unscored names is {pct(-bench_gap.excess_return_annual, S('versus_v2.csv', 'BenchmarkScored vs Benchmark'), 2)} a year lower. Against the same kind of benchmark as v1, the excess is still negative and not significant.\n")
+  f"while the benchmark that includes unscored names is {pct(-bench_gap.excess_return_annual, S('versus_v2.csv', 'BenchmarkScored vs Benchmark'), 2)} a year lower. Against the same kind of benchmark as v1, the excess is still negative and not significant. The archived v1 write-up had already shown the all-included comparison, so the flip is a change of which benchmark is primary, not a new finding.\n")
 w("What changed, and the reason for each:\n")
 for line in [
     "profit measure: `ib` (income before extraordinary items) instead of net income, because the paper uses it; ROA, CFO-minus-ROA accruals and the change in ROA move.",
     "issuance test: net issuance instead of the share-count test with a 2% tolerance, because the paper tests whether common equity was issued; the first literal draft was rejected on a pass rate before any return.",
     f"availability: no 120-day fallback and a 3-day buffer, so a number is used only after a real filing date. In v1 only {cnt(v1_fallback, S('scores_checks_v2.md', 'section 4 v1 fallback rows'))} chosen list rows used a fallback; the buffer moves {cnt(buf_43, S('scores_checks_v2.md', 'section 5 (ii)'))} list rows to an earlier year.",
     "zero-debt override only where the prior-year change is computable.",
-    "primary benchmark: all included names, so unscored companies are in the comparison instead of silently left out.",
+    f"primary benchmark: all included names, so the unscored companies, which v1's benchmark left out, are part of the headline comparison. v1 had already reported this comparison as a post-hoc sensitivity (High {v1_allinc[0]} a year against all included names, t {v1_allinc[1]}), and v2 makes it the primary one.",
+    f"earlier-year fallback: if a company's newest annual report fails the date test, the latest earlier scored year is used (v1 had no buffer and used the newest year); this moves {cnt(buf_43, S('scores_checks_v2.md', 'section 5 (ii)'))} list rows to an earlier year and leaves {cnt(b_stale + f_stale, FPSRC + ' [stale total]')} stale and {cnt(f_none, FPSRC + ' [none total]')} with no earlier scored year.",
     "costs: the reinvestment of mid-period exits is charged.",
     "statistics: automatic lag, t distribution, Holm adjustment over a pre-specified family, and reported power, instead of 12 fixed lags and a fixed |t| of 2.",
 ]:
@@ -420,7 +445,7 @@ for line in [
 w("")
 w("**Timing of the specification.**\n")
 for line in [
-    "The v2 rules were first committed in the project's working repository (those commits are not part of this public repository's history) as 5ce0e23 (2026-11-01 23:01), before any v2 return existed. Between the pre-return score report and the first v2 return file (created 2026-11-02 17:25:08) three more commits changed the specification: 9865622 (17:18) revised the issuance rule from `sstk > 0` to `sstk` net of `prstkc`, because the literal rule flagged 77% of firm-years as issuers (option-exercise proceeds); a054143 (17:19) locked clarifications raised by the independent rebuild; and 24d636f (17:22) locked the hold-flat treatment of Maxim (2007-11 to 2008-05) and General Growth (2009-05) in the benchmark. No v2 return existed before 17:25. Since 24d636f, `config.py` changed only by the `HEADLINE_SPEC` line and a comment on the `SPEC_V2` line (commit 600824d). The small-sample correction for the standard errors, T/(T-k), was suggested during review but was not in the locked configuration, so it is a reported sensitivity, not the as-run convention. The 3-day buffer is an assumption, not a derived number. Some auditors compared v1 returns of dropped rows before the older-year clarification was settled; no v2 return was read.",
+    "The v2 rules were first committed in the project's working repository (those commits are not part of this public repository's history) on 2026-11-01 at 23:01, before any v2 return existed. Between the pre-return score report and the first v2 return file (created 2026-11-02 17:25:08) three more commits changed the specification: one at 17:18 revised the issuance rule from `sstk > 0` to `sstk` net of `prstkc`, because the literal rule flagged 77% of firm-years as issuers (option-exercise proceeds); one at 17:19 locked clarifications raised by the independent rebuild; and one at 17:22 locked the hold-flat treatment of Maxim (2007-11 to 2008-05) and General Growth (2009-05) in the benchmark. No v2 return existed before 17:25. Since the 17:22 commit, `config.py` changed only by the `HEADLINE_SPEC` line and a comment on the `SPEC_V2` line (a later commit at 17:42). The small-sample correction for the standard errors, T/(T-k), was suggested during review but was not in the locked configuration, so it is a reported sensitivity, not the as-run convention. The 3-day buffer is an assumption, not a derived number. Some auditors compared v1 returns of dropped rows before the older-year clarification was settled; no v2 return was read.",
     "v2 itself was specified after v1's results were known, so it is not a blind test of a fresh hypothesis. The claims in the archived v1 write-up about when its own rules were set rest on the project lead's account, as that write-up says; no file can show the order of events.",
     "The builds share the same data and several of the same rules, so an independent rebuild checks the arithmetic and the implementation, not whether the rules are the right ones or the data true.",
 ]:
@@ -441,16 +466,19 @@ w("")
 # ---- verification ----
 w("## Verification\n")
 w("Every number in the results tables was recomputed from the monthly return file with separate numpy/scipy code (`16_spec_v2_numcheck.py`; reports in `output/spec_v2/numcheck_v2.md`), and the figures in this write-up are generated from the v2 files by `17_spec_v2_writeup.py`, "
-  "with their sources in `output/spec_v2/writeup_figures_v2.csv`. The v1 scripts, v1 outputs and all earlier raw and clean data files are unchanged by hash. Independent rebuilds and audits of v2 are separate reports in `verification/`; this write-up uses one figure from them (the unscored names' return, above), and the audit scripts are not included in this repository. "
+  "with their sources in `output/spec_v2/writeup_figures_v2.csv`. Checked at the end state in the project folder: git shows no change to scripts 01 to 11 or to the v1 outputs since the v1 commit, and the earlier raw files match the hash values logged for them (in the project's `output/logs/pull_raw_hashes.csv` and the two v2 pull logs, which are not in the public repository, and in `output/logs/raw_hashes_added.csv`, which is; the last was recorded after the fact). There is no per-stage hash record for the cleaned data in `data/clean`. `00_test_wrds.py`, `requirements.txt`, `config.py` and `CLAUDE.md` were edited after the v2 returns, for additions and wording only. The data files are licensed and are not in the public repository, so the raw-file hashes cannot be checked from the public copy. Independent rebuilds and audits of v2 are separate reports in `verification/`; this write-up uses one figure from them (the unscored names' return, above), and the audit scripts are not included in this repository. "
   "A rebuild does not test the rules and data the builds share.\n")
 
 # ---- runs on v1 ----
 w("## Runs after the v1 write-up: run on the v1 specification, not rerun under v2\n")
 w("The user asked for three further runs after the v1 write-up was finished. **None of them is the headline, none was rerun under v2, and none changes a figure or the answer above.** They used the v1 scores, the v1 scored-only benchmark and v1 costs, "
-  "so in the tables below 'Headline' means the v1 headline. Each has its own folder, and new data went into new files. All are for the same universe, the Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy), and all figures are net of costs.\n")
+  "so in the tables below 'Headline' means the v1 headline. **Benchmark caveat:** they compare with the scored-only benchmark, as v1 did; under v2 that benchmark runs "
+  f"{pct(-bench_gap.excess_return_annual, S('versus_v2.csv', 'BenchmarkScored vs Benchmark excess_return_annual'), 2)} a year above the all-included one, so these excesses would look about that much better against all included names, and the all-included comparison was not computed for them. Each has its own folder, and new data went into new files. All are for the same universe, the Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy), and all figures are net of costs.\n")
 j = v1_text.index("Each run's monthly returns were independently rebuilt")
 CARRIED_B_ORIG = v1_text[j:]
 CARRIED_B = re.sub(r"(?<!not )(?<!v1 )\bthe headline", "the v1 headline", CARRIED_B_ORIG)
+assert "but it differs at spin-offs (up to 8.4 points on a single stock) and at delistings" in CARRIED_B
+CARRIED_B = CARRIED_B.replace("but it differs at spin-offs (up to 8.4 points on a single stock) and at delistings", "but it differs at spin-offs and at delistings (the gaps are listed in the project's `output/extension_2026/validation.md`, which the public repository does not include)")
 CARRIED_B = CARRIED_B.replace("| Headline", "| v1 headline").replace("The headline effectively", "The v1 headline effectively").replace("any headline figure", "any v1 headline figure")
 w("*The rest of this section is carried unchanged from the v1 write-up.*\n")
 w(CARRIED_B)
@@ -464,7 +492,7 @@ fig = pd.concat([fig, pd.DataFrame([{"figure": k, "source": f"HAND-COPIED: {v}"}
 fig.insert(0, "universe_label", LABEL)
 fig.to_csv(V2 / "writeup_figures_v2.csv", index=False)
 
-STRUCT = {"17": "git commit time (17:18, 17:19, 17:25) as given by the project lead", "19": "git commit time 17:19", "22": "git commit time 17:22", "23": "git commit time 23:01", "77": "77% of firm-years flagged by the literal rule (config.py comment, pre-return report)", "1.7": "paper difference +0.017 written as points", "100": "100/100 label", "18": "MAX_SCORE_AGE_MONTHS", "1994": "year of the Newey-West paper", "500": "UNIVERSE_SIZE", "40": "GICS sector code", "60": "GICS sector code", "95": "95% range", "9865622": "commit"}
+STRUCT = {"42": "git commit time 17:42", "17": "git commit time (17:18, 17:19, 17:25) as given by the project lead", "19": "git commit time 17:19", "22": "git commit time 17:22", "23": "git commit time 23:01", "77": "77% of firm-years flagged by the literal rule (config.py comment, pre-return report)", "1.7": "paper difference +0.017 written as points", "100": "100/100 label", "18": "MAX_SCORE_AGE_MONTHS", "1994": "year of the Newey-West paper", "500": "UNIVERSE_SIZE", "40": "GICS sector code", "60": "GICS sector code", "95": "95% range"}
 known = set(STRUCT) | {re.sub(r"[+%,]", "", s) for s, _ in TRACE} | {re.sub(r"[+%,]", "", k) for k in HAND}
 generated = text.replace(CARRIED_A, "").replace(CARRIED_B, "")
 untraced = []

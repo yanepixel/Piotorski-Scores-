@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parent
 RAW = ROOT / "data" / "raw"
 F4 = ["mktrf", "smb", "hml", "umd"]
 TOL_LEVEL, TOL_T = 1e-8, 1e-6
+LAG_A, LAG_B = cfg.SPEC_V2["sensitivity_lags"]   # extra lag counts reported beside the automatic lag
 
 
 def nw_ols(y, X, lags):
@@ -115,7 +116,7 @@ def main():
             cmp(f"{label} | {test} | t", t, row.t, TOL_T)
             cmp(f"{label} | {test} | p", pv, row.p_value, TOL_T)
             cmp(f"{label} | {test} | mde", mde_v, row.mde_80pct_power_annual, TOL_LEVEL)
-        for lg, tc, pc in [(6, "lag6_t", "lag6_p")]:
+        for lg, tc, pc in [(LAG_A, f"lag{LAG_A}_t", f"lag{LAG_A}_p")]:
             for test, y, X in [("raw excess vs primary benchmark (all included)", y1, np.ones((n, 1))), ("alpha, Mkt-RF+SMB+HML+MOM (excess of rf)", y2, X2)]:
                 bb, ss, dd = nw_ols(y, X, lg)
                 row = tests[(tests.series == "High") & (tests.test == test) & (tests.period == label)].iloc[0]
@@ -126,9 +127,9 @@ def main():
             row = tests[(tests.series == "High") & (tests.test == test) & (tests.period == label)].iloc[0]
             cmp(f"{label} | {test} | lag_corr_t", bb[0] / ss[0], row.lag_corr_t, TOL_T)
         # lag-12 sensitivity
-        b12, se12, _ = nw_ols(y1, np.ones((n, 1)), 12)
+        b12, se12, _ = nw_ols(y1, np.ones((n, 1)), LAG_B)
         row = tests[(tests.series == "High") & (tests.test == "raw excess vs primary benchmark (all included)") & (tests.period == label)].iloc[0]
-        cmp(f"{label} | raw excess | lag12 t", b12[0] / se12[0], row.lag12_t, TOL_T)
+        cmp(f"{label} | raw excess | lag{LAG_B} t", b12[0] / se12[0], row[f"lag{LAG_B}_t"], TOL_T)
     adj = holm(fam_p)
     fam = tests[tests.in_holm_family]
     order = [(per[0], tst) for per in periods for tst in ["raw excess vs primary benchmark (all included)", "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)"]]

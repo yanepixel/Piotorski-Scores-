@@ -119,6 +119,8 @@ def compute_scores_v2(df):
     if cfg.MISSING_SIGNAL_RULE != "drop":
         raise ValueError(f"Unknown MISSING_SIGNAL_RULE {cfg.MISSING_SIGNAL_RULE}")
     d["F_SCORE_computed"] = d[SIGNALS].sum(axis=1).where(d.signals_computable == len(SIGNALS))
+    if V2["fallback_availability"] != "exclude":
+        raise ValueError("spec_v2 implements fallback_availability = exclude only")
     d["no_filing_date"] = d.filing_date.isna()
     d["F_SCORE"] = d.F_SCORE_computed.where(~d.no_filing_date)   # no real 10-K date: unscorable, no fallback
     d["avail_date_v2"] = d.filing_date + pd.Timedelta(days=V2["availability_buffer_days"])
@@ -318,6 +320,9 @@ def main():
     per = m.groupby("formation_date").agg(included=("permco", "size"), scored=("scored", "sum")).reset_index()
     L = [f"# spec_v2 scores: report before any return is read\n", f"Label `{V2['label']}`, rules in `SPEC_V2` (config.py) and CLAUDE.md section 8f. No return value was read to produce this file. **{len(failures)} check failure(s).**\n"]
     L += [f"- FAIL: {x}" for x in failures] + [""]
+    L.append(f"**Coverage.** Company-years FY{cfg.FIRST_SCORE_FY}-{cfg.LAST_SCORE_FY}: {in_range_rows} from {s[ok].gvkey.nunique()} unique companies (GVKEY), fiscal years {int(s[ok].fyear.min())} to {int(s[ok].fyear.max())}, "
+             f"year-ends {s[ok].datadate.min().date()} to {s[ok].datadate.max().date()}; {int(scored.sum())} scored from {s[scored].gvkey.nunique()} companies. List rows: {len(m)} from {m.permco.nunique()} unique companies (PERMCO) on {m.formation_date.nunique()} formation dates, "
+             f"{m.formation_date.min().date()} to {m.formation_date.max().date()}; {len(valid)} scored from {valid.permco.nunique()} companies. Drops by reason are in sections 3 to 6 and 8.\n")
     L.append("## 1. F-score distribution, v1 beside v2\n")
     L.append(f"Company-years scored FY{cfg.FIRST_SCORE_FY}-{cfg.LAST_SCORE_FY}: v1 {int(v1_scored.sum())}, v2 {int(scored.sum())} (of {in_range_rows}). Mean score v1 {mean_v1:.2f}, v2 {mean_v2:.2f}. Median v1 {v1s.F_SCORE.median():.0f}, v2 {s.F_SCORE.median():.0f}. List rows scored: v1 {int(v1f.scored.sum())}, v2 {len(valid)} (of {len(m)}).\n")
     L.append(md_table(dist))

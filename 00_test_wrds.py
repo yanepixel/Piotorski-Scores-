@@ -1,6 +1,6 @@
 """
 Step 0 check: confirm WRDS login works and that your account can read every table the backtest needs.
-Run once. Each table prints OK or NO ACCESS.
+Run once. Each table prints OK or NO ACCESS. crsp.msp500list is expected to print NO ACCESS (S&P 500 history is not available to this account; the project uses a market-cap proxy instead).
 """
 import os
 from pathlib import Path
@@ -18,6 +18,13 @@ TABLES = {
     "CRSP-Compustat link":             "crsp.ccmxpf_lnkhist",
     "Fama-French 5 factors":           "ff.fivefactors_monthly",
     "Fama-French 3 + momentum":        "ff.factors_monthly",
+    # Tables used by later scripts (added so step 0 covers the whole pipeline)
+    "CRSP stock names":                "crsp.msenames",             # 01
+    "Compustat S&P index members":     "comp.idxcst_his",           # 01 (current members only)
+    "Compustat company names":         "comp.company",              # 03
+    "Compustat quarterly":             "comp.fundq",                # 08
+    "Compustat monthly security":      "comp.secm",                 # 09a
+    "Compustat security":              "comp.security",             # 09a
 }
 
 

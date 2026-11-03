@@ -1,6 +1,6 @@
 # Compliance re-audit of the brief (Agent 1)
 
-Report only. This is the only file I wrote or changed in the project. I made no WRDS requests, and I ran no script that writes project files. Baseline: commit 259a4f7, and `git status` and `git diff` against it were empty when I started.
+Report only. This is the only file I wrote or changed in the project. I made no WRDS requests, and I ran no script that writes project files. Baseline: the first v1 commit, and `git status` and `git diff` against it were empty when I started.
 
 **Universe:** Top 500 US common stocks by market cap, excluding financials and utilities (S&P 500 proxy).
 

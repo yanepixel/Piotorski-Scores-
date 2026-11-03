@@ -159,7 +159,7 @@ For each formation date: take included universe members; attach the most recent 
 Output: `data/clean/formation.parquet`. Log per date: universe size, # with valid score, # dropped as stale/missing.
 
 ### Phase 5 — `06_portfolios.py`
-- Buckets: High (`HIGH_SCORES`), Low (`LOW_SCORES`), Middle; benchmark = all scored, included names.
+- Buckets: High (`HIGH_SCORES`), Low (`LOW_SCORES`), Middle; benchmark = all scored, included names (v1; spec_v2 holds all included names in the primary benchmark and reports this one beside it, section 8f).
 - Log count per bucket per year; flag any bucket < 10 names.
 - Equal weight at formation, buy-and-hold drift for `HOLDING_MONTHS`.
 - Monthly portfolio return = weighted average of member returns (msf_v2 returns include delisting). If a stock exits mid-year, reinvest pro-rata across remaining holdings.
@@ -232,7 +232,7 @@ Robustness definitions are in `config.py`. They were set after headline returns 
 
 ## 8d. Post-write-up runs requested by the user (2026-11-01)
 
-These are separate labelled runs after the final write-up. They never change headline files, tables or `output/writeup.md`'s headline. Outputs go in their own folders, and new raw data goes in new files.
+These are separate labelled runs after the final write-up. They never changed the v1 headline files, tables or write-up; since the Designation in 8f (spec_v2 is now the headline) the v1 write-up is `output/archive_v1/writeup_v1.md`. Outputs go in their own folders, and new raw data goes in new files.
 
 1. `extension_2026`: January–May 2026 for the 2025 portfolio using `comp.secm`, because CRSP ends 2025-12-31. Portfolio returns only after the overlap validation has been reviewed.
 2. `reit_liquidity_substitute` (user chose option A): defined in `config.py`. It was set after similar variants were seen, so it is not a blind test; disclose that.
@@ -243,13 +243,17 @@ These are separate labelled runs after the final write-up. They never change hea
 
 No rule, score or return changes. The issuance and zero-debt sensitivities and the all-included benchmark comparison are disclosures only, seen after results, and are not reasons to change a rule. The run order is in `README.md`.
 
-## 8f. spec_v2: re-specification after external review (2026-11-02, before any v2 return exists)
+## 8f. spec_v2: re-specification after external review (first committed 2026-11-01 23:01; revised and clarified 2026-11-02, all before any v2 return existed; the override sentence, implementation notes and Designation were added after the returns)
 
-The user supplied an external review list and Piotroski's paper. Items marked "change" were acted on as a separate labelled run, `SPEC_V2` in `config.py`, with outputs in `output/spec_v2/`. The v1 headline, its files and the public repository are not changed or pushed without the user's approval.
+The user supplied an external review list and Piotroski's paper. Items marked "change" were acted on as a separate labelled run, `SPEC_V2` in `config.py`, with outputs in `output/spec_v2/`. The v1 files and the public repository were not changed or pushed without the user's approval. That approval was later given for the Designation below; the public repository is updated separately.
 
 In scope for v2: review items 2, 3, 8, 9, 10, 13, 15, 17, 18, 19, 20 and 23. Checks without a new run: items 1, 5, 21, and the code claims for items 10 and 15. Not acted on, with reasons in the master's report: 4, 6, 7, 11, 12, 14, 16, 22. Read against the paper: the paper itself finds the effect weak in the largest firms (Table 4), uses income before extraordinary items, tests "no common equity issued", counts current-portion debt in leverage, and defines Low as 0-1 with 0-2 as a footnote alternative and below 5 in Appendix 1.
 
 Clarifications locked before any v2 return (master, 2026-11-02): (1) leverage stays dltt only, as in v1; the paper's current-portion debt is a noted deviation, not in v2. (2) The zero-debt override needs dltt and dltt_lag1 both present and zero, and lag2_ok, so LEVER_{t-1} is computable. (3) F_EQ_OFFER = 1 if sstk - prstkc <= 0 with nulls counted as 0, so a firm-year with both null passes; negative values are used as reported; the 2% rule and the 1 million share floor do not apply to this signal. (4) Availability is calendar days, filing date + 3 <= formation date; if the newest year fails the date test, the most recent earlier scored year is used, as merge_asof does; the 18-month age rule stays. (5) All included names are held in the primary benchmark with their actual returns, charged like the buckets. (6) MISSING_SIGNAL_RULE stays "drop". (7) Mid-period reinvestment is charged TRANSACTION_COST_BPS on the value reinvested, one side (the purchase); an exit itself is not a trade, and hold-flat null-return months are not charged. (8) Holm is one family of six p-values: two primary tests times the full period and the two SUBPERIODS. (9) Unscored included names with null returns in a holding window: only Maxim 2007-11 to 2008-05 and General Growth 2009-05 occur, both in the all-included benchmark only. Decision: hold flat at 0% with no charge (`NULL_RETURN_HOLD_FLAT_MONTHS["spec_v2"]`); any other held null stops the run. (10) Mechanics follow v1: a formation-date delister counts at 1/N in the turnover target and is charged as a buy, earns nothing, and its weight is respread free; the reinvestment charge is one-sided and taken in the exit month.
+
+Section 8f overrides the earlier sections wherever they differ (for example the benchmark in section 5 Phase 5, the lag count and p-values in Phase 6, and the final write-up in section 6).
+
+Implementation notes, added after the returns, with no rule changed: (a) clarification 2 is implemented as "LEVER_{t-1} is computable" (a proxy for `lag2_ok`); nine firm-years differ between the two readings and none is scored under either. (b) The reinvestment charge of clarification 7 is not taken for an exit in the final holding month, because nothing is reinvested; none of the 191 exits is in that position. (c) The statistics constants (5% size, 80% power, the lag 6 and 12 sensitivities and the T/(T-k) sensitivity) are SPEC_V2 keys; they were hard-coded in script 14 before.
 
 Designation (user, 2026-11-02): **spec_v2 replaces v1 as the headline.** v1 outputs stay in place, unchanged, as the superseded first specification, and are described that way. The 2026 extension, the REIT liquidity substitute and the 100/100 long/short were run on the v1 specification and have not been rerun under v2; they must be labelled as v1-specification runs. The write-up reports v2's primary tests as pre-specified in `SPEC_V2`, the Holm result with its sensitivity to the standard-error convention, both benchmarks together, and the power limits.
 

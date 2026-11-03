@@ -1,4 +1,4 @@
-# Re-audit at commit 259a4f7
+# Re-audit at the first v1 commit
 
 Agent 3, report only. Nothing is committed. No WRDS query was made: every test here uses files already in the project. I did not read `verification/reaudit_agent1.md`, so this stays independent of it. `output/writeup.md` is FF9C57FF69E129, read in full.
 
@@ -147,7 +147,7 @@ The test scripts are not in this repository.
 
 ## Re-read after the fixes, 2026-11-01
 
-`output/writeup.md` 67C097598C76B2, read in full and compared with commit 259a4f7. Report only. No project file changed.
+`output/writeup.md` 67C097598C76B2, read in full and compared with the first v1 commit. Report only. No project file changed.
 
 **Result: every new figure is correct, and the answer still stands. Two items should change (R1, R2), three smaller ones are worth fixing (R3 to R5), and the sensitivities can't be rerun by a reader yet (R6).**
 
@@ -200,7 +200,7 @@ Suggested addition to line 84: "In simulations that t is about -2 (p 0.04 to 0.0
 | Waste Connections, line 196 | PERMNO 92949, -2.04% to -2.06%, High unchanged: match |
 | New disclosures against the rest | No contradiction. Lines 42 and 172 are labelled as later sensitivities, and line 98's "every variant run" still holds, since they aren't variants |
 | Answer paragraph | Reads clearly. The new sentence is long but correct. Its first and last sentences are unchanged |
-| Other changes | Unchanged text is as it was at 259a4f7, by the diff. Config additions set out approved cases and pull fields, with no changed value |
+| Other changes | Unchanged text is as it was at the first v1 commit, by the diff. Config additions set out approved cases and pull fields, with no changed value |
 
 **Low, `CLAUDE.md` section 8c:** "before their own results were reported" is also the coordinator's record, not something files can show. The write-up attributes this correctly at line 203, so nothing a reader relies on depends on it.
 

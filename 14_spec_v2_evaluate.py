@@ -33,7 +33,12 @@ F4 = ["Mkt-RF", "SMB", "HML", "MOM"]
 F6 = cfg.FACTOR_MODEL
 LONG_ONLY = ["High", "Middle", "Low", "Benchmark", "BenchmarkScored", "RSP", "SPY"]
 CHARGED = ["High", "Middle", "Low", "Benchmark", "BenchmarkScored"]
-ALPHA, POWER = 0.05, 0.80
+ALPHA, POWER = V2["alpha_level"], V2["power_level"]   # size and power of the minimum-detectable-effect calculation (SPEC_V2)
+LAG_A, LAG_B = V2["sensitivity_lags"]                # the two extra lag counts reported beside the automatic lag (SPEC_V2)
+# SPEC_V2 keys that name the one behaviour implemented below: stop if the config says otherwise
+assert V2["hac_lag_rule"] == "newey_west_1994_automatic" and V2["small_sample"] == "t_distribution_T_minus_k", "HAC lag rule or small-sample rule differs from the code"
+assert V2["multiple_testing"] == "holm_over_prespecified_family" and V2["primary_tests"] == ["raw_excess_vs_primary_benchmark", "mkt_smb_hml_mom"], "test family differs from the code"
+assert V2["primary_benchmark"] == "equal_weight_all_included" and V2["report_power"] is True, "benchmark or power reporting differs from the code"
 
 
 def md_table(df, digits=None):
@@ -134,12 +139,12 @@ def main():
 
     def add(series, test, period, y, x, lags_main, extra_lag12=True):
         r_main = fit(y, x, lags_main)
-        r12 = fit(y, x, 12)
-        rc = fit(y, x, lags_main, correction=True)
-        r6 = fit(y, x, 6)
-        test_rows.append({"lag_corr_t": rc["t"], "lag_corr_p": rc["p"], "lag6_t": r6["t"], "lag6_p": r6["p"],"universe_label": LABEL, "series": series, "test": test, "period": period, "months": len(y), "hac_lags": lags_main, "estimate_annual": r_main["est"] * 12,
+        r12 = fit(y, x, LAG_B)
+        rc = fit(y, x, lags_main, correction=V2["sensitivity_small_sample_correction"])
+        r6 = fit(y, x, LAG_A)
+        test_rows.append({"lag_corr_t": rc["t"], "lag_corr_p": rc["p"], f"lag{LAG_A}_t": r6["t"], f"lag{LAG_A}_p": r6["p"], "universe_label": LABEL, "series": series, "test": test, "period": period, "months": len(y), "hac_lags": lags_main, "estimate_annual": r_main["est"] * 12,
                           "se_annual": r_main["se"] * 12, "t": r_main["t"], "p_value": r_main["p"], "df": r_main["df"], "mde_80pct_power_annual": mde(r_main["se"], r_main["df"]) * 12,
-                          "lag12_t": r12["t"], "lag12_p": r12["p"], "r_squared": r_main["fit"].rsquared if x is not None else np.nan})
+                          f"lag{LAG_B}_t": r12["t"], f"lag{LAG_B}_p": r12["p"], "r_squared": r_main["fit"].rsquared if x is not None else np.nan})
         return r_main
 
     for label, a, b in periods:
@@ -167,7 +172,7 @@ def main():
     tests.loc[fam.index, "holm_adjusted_p"] = holm(fam.p_value.values)
     tests["in_holm_family"] = tests.index.isin(fam.index)
     # Holm within each variant, over the same six tests. The as-run column is holm_adjusted_p; the variants are reported beside, never used to choose.
-    for col, name in [("lag_corr_p", "holm_p_lag_corrected"), ("lag6_p", "holm_p_lag6"), ("lag12_p", "holm_p_lag12")]:
+    for col, name in [("lag_corr_p", "holm_p_lag_corrected"), (f"lag{LAG_A}_p", f"holm_p_lag{LAG_A}"), (f"lag{LAG_B}_p", f"holm_p_lag{LAG_B}")]:
         tests[name] = np.nan
         tests.loc[fam.index, name] = holm(tests.loc[fam.index, col].values)
     tests.to_csv(out / "tests_v2.csv", index=False)
@@ -242,6 +247,10 @@ def main():
     # --- Report ---
     L = [f"# spec_v2 results, {kind}: {LABEL}\n", f"**{len(failures)} check failure(s).** {T} months, {p.month.iloc[0]} to {p.month.iloc[-1]}; last portfolio partial (7 of 12 months). Returns are net of costs; RSP and SPY are fund returns. "
          f"Primary benchmark = every included name, equal weight, charged like the buckets; BenchmarkScored = scored names only (v1's benchmark).\n"] + [f"- FAIL: {x}" for x in failures] + [""]
+    fcov = pd.read_parquet(ROOT / "data" / "clean" / "spec_v2" / ("formation_v2.parquet" if rule == "net" else "formation_v2_literal.parquet"), columns=["formation_date", "permco", "scored", "bucket"])
+    L.append(f"**Coverage.** {len(fcov)} included list rows from {fcov.permco.nunique()} unique companies on {fcov.formation_date.nunique()} formation dates ({fcov.formation_date.min().date()} to {fcov.formation_date.max().date()}); "
+             f"{int(fcov.scored.sum())} scored list rows from {fcov[fcov.scored].permco.nunique()} unique companies. Unique companies by bucket: {', '.join(f'{b} ' + str(fcov[fcov.bucket == b].permco.nunique()) for b in ['High', 'Middle', 'Low'])}. "
+             f"Monthly returns {p.month.iloc[0]} to {p.month.iloc[-1]} ({T} months). No rows are dropped by this script.\n")
     L.append("## Headline: v2 beside v1\n")
     L.append(md_table(head.drop(columns="universe_label"), 4))
     L.append(f"\nv1 'Benchmark' = scored names only, so it sits beside `BenchmarkScored`. v1 rows use v1's costs (no charge on mid-period reinvestment).\n")
@@ -251,22 +260,22 @@ def main():
     L.append("\nHolm adjustment is over these six p-values (two tests x full period and the two subperiods). `mde_80pct_power_annual` is the smallest true effect detectable with 80% power at 5% two-sided, given this sample's standard error.\n")
     sens = tests[tests.in_holm_family].copy()
     sens["test"] = sens.test.map({"raw excess vs primary benchmark (all included)": "raw excess", "alpha, Mkt-RF+SMB+HML+MOM (excess of rf)": "4-factor alpha"})
-    sens_cols = sens[["test", "period", "estimate_annual", "t", "p_value", "holm_adjusted_p", "lag_corr_t", "lag_corr_p", "holm_p_lag_corrected", "lag6_t", "lag6_p", "holm_p_lag6", "lag12_t", "lag12_p", "holm_p_lag12"]]
+    sens_cols = sens[["test", "period", "estimate_annual", "t", "p_value", "holm_adjusted_p", "lag_corr_t", "lag_corr_p", "holm_p_lag_corrected", f"lag{LAG_A}_t", f"lag{LAG_A}_p", f"holm_p_lag{LAG_A}", f"lag{LAG_B}_t", f"lag{LAG_B}_p", f"holm_p_lag{LAG_B}"]]
     sens_cols = sens_cols.rename(columns={"t": "t_as_run", "p_value": "p_as_run", "holm_adjusted_p": "holm_as_run"})
     L.append("## Sensitivity of the primary tests to the standard-error convention\n")
     L.append(f"Every primary test, High, under four conventions: as run (Newey-West, automatic lag floor(4 * (T / 100) ** (2 / 9)) = {auto_lag(T)} for the full period, no small-sample correction; the convention SPEC_V2 locks), the same lag {auto_lag(T)} "
-             "with the covariance multiplied by T / (T - k), lag 6, and lag 12. p-values use t with T - k degrees of freedom. Holm is over the same six tests within each convention. Reported beside; none was used to choose.\n")
+             f"with the covariance multiplied by T / (T - k), lag {LAG_A}, and lag {LAG_B}. p-values use t with T - k degrees of freedom. Holm is over the same six tests within each convention. Reported beside; none was used to choose.\n")
     L.append(md_table(sens_cols, 4))
     reject = []
-    for col, lab in [("holm_adjusted_p", "as run"), ("holm_p_lag_corrected", f"lag {auto_lag(T)} with the T / (T - k) correction"), ("holm_p_lag6", "lag 6"), ("holm_p_lag12", "lag 12")]:
-        hits = [f"{r.test} {r.period}" for r in sens.itertuples() if getattr(r, col) < 0.05]
+    for col, lab in [("holm_adjusted_p", "as run"), ("holm_p_lag_corrected", f"lag {auto_lag(T)} with the T / (T - k) correction"), (f"holm_p_lag{LAG_A}", f"lag {LAG_A}"), (f"holm_p_lag{LAG_B}", f"lag {LAG_B}")]:
+        hits = [f"{r.test} {r.period}" for r in sens.itertuples() if getattr(r, col) < ALPHA]
         reject.append(f"- {lab}: {', '.join(hits) if hits else 'none'}")
     L.append("\nTests rejecting at 5% after Holm adjustment, by convention:\n")
     L += reject
     a = sens[(sens.test == "4-factor alpha") & (sens.period == periods[2][0])].iloc[0]
     L.append("\nThe lag rule used is the formula floor(4 * (T / 100) ** (2 / 9)), which is what SPEC_V2 locks. It is not the data-dependent Newey-West (1994) bandwidth, which is unstable at T = 127 (one independent check found it picking a lag near 59 there). "
              f"Read plainly: the only primary test that rejects at 5% after Holm is the {periods[2][0]} four-factor alpha, and its margin is thin. Holm p is {a.holm_adjusted_p:.3f} as run, "
-             f"{a.holm_p_lag_corrected:.3f} with the T / (T - k) correction (no rejection), {a.holm_p_lag6:.3f} at lag 6 and {a.holm_p_lag12:.4f} at lag 12. No other primary test rejects under any convention.\n")
+             f"{a.holm_p_lag_corrected:.3f} with the T / (T - k) correction (no rejection), {getattr(a, f'holm_p_lag{LAG_A}'):.3f} at lag {LAG_A} and {getattr(a, f'holm_p_lag{LAG_B}'):.4f} at lag {LAG_B}. No other primary test rejects under any convention.\n")
     L.append("## All tests\n")
     L.append(md_table(tests.drop(columns=["universe_label", "in_holm_family"]), 4))
     L.append("\n## Subperiods (net)\n")

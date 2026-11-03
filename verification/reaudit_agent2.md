@@ -1,4 +1,4 @@
-# Re-audit: can a clean clone reproduce commit 259a4f7?
+# Re-audit: can a clean clone reproduce the first v1 commit?
 
 Report only. Written for the user and the coordinator. Date: 2026-11-01.
 
@@ -8,7 +8,7 @@ Report only. Written for the user and the coordinator. Date: 2026-11-01.
 
 ## Method
 
-- Commit `259a4f78b182850fb250519d993dd0705cec0a94`, cloned to my session scratch folder, outside the project, with no `data/` folder at the start.
+- The first v1 commit, cloned to my session scratch folder, outside the project, with no `data/` folder at the start.
 - Each script ran by full path with the clone as its working folder.
 - **Pass 1:** 01 to 11 in the numbered order.
 - **Pass 2, same clone:** the helper `output/extension_2026/stage1_validate.py`, then 10, `check_contributors.py` and 11.
@@ -111,7 +111,7 @@ Logs of all passes are in my session scratch folder, under `scratchpad\reaudit\l
 
 ## Update, 2026-11-01: rerun of the uncommitted fixes
 
-**This section tests the working tree after the fixes, which are not yet committed.** The sections above are kept as the record for commit 259a4f7.
+**This section tests the working tree after the fixes, which are not yet committed.** The sections above are kept as the record for the first v1 commit.
 
 **Answer:** the fixes work. Following `README.md` from an export with no `data/` folder, all 14 scripts exit 0 using a fresh install from `requirements.txt`. 323 of 328 files are byte-identical. The other 5 are logs: 4 differ only by timestamps, appended rows or row order, and `pull_checks.md` also loses a hand-written note. No result differs.
 

@@ -19,7 +19,7 @@ __pycache__/
 !output/tables/versus_benchmark.csv
 !output/tables/year_by_year.csv
 !output/tables/returns_by_score.csv
-output/logs/
+output/logs/*
 output/extension_2026/validation.md
 
 # spec_v2 summary tables (portfolio level, no company values). Every other spec_v2 CSV stays out.
@@ -34,3 +34,6 @@ output/extension_2026/validation.md
 !output/spec_v2/writeup_figures_v2.csv
 !output/spec_v2/literal_sensitivity/headline_v2.csv
 !output/spec_v2/literal_sensitivity/tests_v2.csv
+
+# Hashes of raw files (names, sizes, row counts, hashes only; no data values)
+!output/logs/raw_hashes_added.csv
