@@ -10,9 +10,9 @@ Written for: the project owner and the two reviewers who raised the issues. Rule
 | B. Headline | Done | README and write-up say "no detectable edge", define excess return, and give both the mean gap x12 and the CAGR gap with Sharpe. Minimum detectable effect and 95% interval are the literal-rule figures. |
 | C. Benchmark | Done | Both benchmarks side by side everywhere. All-included stays primary for a reason that does not depend on sign (the brief's equal-weighted universe); stated as set after v1. The -5.29% audit script is `verification/audit_43_v2_audit.py` (already in repo). |
 | D. Issuance | Done | Literal paper rule primary (negative `sstk` passes, after an audit found this wrong); net rule a sensitivity; missing `prstkc` is unknown under it; per-year High count and pass-rate table. |
-| E. Restated data | Not done | Single-vintage pull not built; FY2015-24 vintage test blocked (`comp_snapshot` denied, sample table ends FY2014); no restatement-resistant sensitivity built. |
+| E. Restated data | Done except the full table | Single-vintage pull built (`12d`): identical to the separate pulls on all 22 columns of 20,796 rows. FY2015-24: `comp_snapshot` denied, but an SEC as-filed sample check (`26a`, `26b`; 119 usable firm-years) measures it: 91.6% of scores unchanged, 5.0% change bucket (all involve Middle; no High-Low jumps; 26 of 26 High stay High). Sample, simple tag map, not the full table. No restatement-resistant sensitivity built. |
 | F. Numcheck | Partly | `19_v3_numcheck.py`: 400 random F-scores recomputed from raw Compustat, 400 of 400 agree; gross High and Low returns recomputed from raw CRSP, 247 of 247 months agree for each. Printed-number matching was removed (it could not fail); README and write-up numbers are generated from the CSVs. Old `16_` check unchanged. The "every number recomputed" claim is removed. |
-| G. Robustness | Partly | `22_v3_robustness.py`: lag-90 replaced by filing +30/+60 and year-end +150/+180; also 7+ cutoff, cap-weighted, available-signals scoring. Each differs from the headline (checked in code). Sector-neutral, value, profitability, universe-buffer and eight-signal variants not rerun. |
+| G. Robustness | Done | `22_v3_robustness.py`: lag-90 replaced by filing +30/+60 and year-end +150/+180; also 7+ cutoff, cap-weighted, available-signals scoring. Each differs from the headline (checked in code). The five earlier variants (sector-neutral, value, profitability, universe-buffer, eight-signal) rerun in `27_v3_robustness_extra.py`; none significant. |
 | H1 lag key | Done | Renamed; lags 4, 6, 12 reported side by side. |
 | H2 null returns / delisting | Done | `23_v3_null_return_rule.py`: exit rule on all portfolios (gap +1.21% to +1.21%, no change worth reporting); all 191 mid-period exits already have a delisting return, so Shumway -30% replaces nothing. |
 | H3 12b run order | Not done | `12b` still reads the literal scores file for a pass-rate figure when present. |
@@ -22,9 +22,9 @@ Written for: the project owner and the two reviewers who raised the issues. Rule
 | H7 100/100 | Done | `25_v3_long_short.py`, labelled an illustration; exposure peaks shown (up to 3.95x gross uncapped). |
 | H8 costs | Done | `20_v3_cost_sensitivity.py`, 0/5/10/20/50 bp. |
 | H9 missing signals | Done | Variant `score_on_available_signals` in robustness. |
-| H10 B/M replication | Not started | Optional. |
+| H10 B/M replication | Replication-lite done | `30_v3_bm_replication.py` with its own preregistration `output/prereg_v3_bm.md`, inside our 500 names (top book-to-market quintile). Not the paper's test; minimum detectable effect about 9% a year; High bucket median 5 names. A full replication needs a broad-universe pull, not authorised. |
 | I. Tests | Done | `tests/test_signals.py`: hand-worked signals, nulls, year gaps, filing dates, five planted bugs; all pass. |
-| End-to-end rerun | Done | `verification/clean_folder_rerun_v3.md`: 31 steps exit 0 from fresh copy and fresh pulls; 44 CSVs, cleaned data and write-up byte-identical. Extension and REIT scripts (09-10) still on earlier specifications. |
+| End-to-end rerun | Done | `verification/clean_folder_rerun_v3.md`: 31 steps exit 0 from fresh copy and fresh pulls; 44 CSVs, cleaned data and write-up byte-identical. Extension and REIT now rerun on v3 (`28`, `29`). |
 
 ## Headline numbers, old vs new
 
@@ -49,13 +49,13 @@ An interim v3 run (before the audit fixes) gave literal 11.74% and +0.95%; the n
 
 ## What could not be done and why
 
-- FY2015-24 restatement testing: `comp_snapshot` is denied on this account and the sample point-in-time table ends at FY2014. Effect is unmeasured. Bounded only by the FY2005-14 overlap (98.5% of scores unchanged, 0.2% changed bucket, 99.6% of High stayed High).
-- A single-vintage pull and same-pass links/GICS pull: would need rewriting the pull scripts and fresh live pulls; not done.
+- Full FY2015-24 restatement testing: `comp_snapshot` is denied on this account and the sample point-in-time table ends at FY2014. Replaced by an SEC sample check (above), not the full table. The FY2005-14 overlap result is (98.5% of scores unchanged, 0.2% changed bucket, 99.6% of High stayed High).
+- Links and GICS are still pulled separately from the universe pull; hashing is after the fact, not inside each pull script.
 - Held-out period: none exists.
-- Extension and REIT runs, and the five v1 robustness variants, remain on earlier specifications.
+- A full-market book-to-market replication: needs a broad-universe WRDS pull the project owner has not authorised; only the within-universe replication-lite was run.
 - Printed-number matching for README: no reliable machine check was built; README numbers are generated.
-- Not independently audited: the final state after the last four commits (an auditor reviewed commit 889764b; fixes were then applied by me).
+- Not independently audited: the state after commit 889764b except for the agents' own scripts (27-30), which I reran and found reproducible; my fixes after the first audit have no second review.
 
 ## Conclusion
 
-On the 500 largest non-financial, non-utility US stocks, buying high F-score companies shows no detectable edge. Which side of zero the point estimate falls on depends on defensible choices (the paper's literal issuance rule gives about +1.2% a year compounded against the all-included benchmark; the net rule gives about -0.2%), and none of the primary tests is anywhere near significant (smallest Holm-adjusted p 0.91 under the primary rule). The tests could only reliably detect an edge of roughly 4% a year or more, so Piotroski's own +1.7 point effect is not ruled out. The one earlier significant result (2015-25) was found by a post-hoc split, and most of it is the universe's own weak factor performance. Costs up to 50 bp do not change the picture. Data-vintage exposure after FY2014 is unmeasured. This universe is also not a test of the paper's claim, which concerns high book-to-market firms and is weak among the largest.
+On the 500 largest non-financial, non-utility US stocks, buying high F-score companies shows no detectable edge. Which side of zero the point estimate falls on depends on defensible choices (the paper's literal issuance rule gives about +1.2% a year compounded against the all-included benchmark; the net rule gives about -0.2%), and none of the primary tests is anywhere near significant (smallest Holm-adjusted p 0.91 under the primary rule). The tests could only reliably detect an edge of roughly 4% a year or more, so Piotroski's own +1.7 point effect is not ruled out. The one earlier significant result (2015-25) was found by a post-hoc split, and most of it is the universe's own weak factor performance. Costs up to 50 bp do not change the picture. Data-vintage exposure after FY2014 is measured only on an SEC sample (about 5% of firm-years change bucket, none between High and Low). This universe is also not a test of the paper's claim, which concerns high book-to-market firms and is weak among the largest.

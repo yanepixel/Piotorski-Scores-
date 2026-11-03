@@ -71,6 +71,38 @@ Long High and short Low, each equal to NAV at every formation date, costs charge
 Variants: High = 7-9; market-cap weights; availability at filing date + 30 or 60 days; availability at year-end + 150 or 180 days (filing date ignored, no fallback); firm-years missing some signals kept, scored on the signals available (needs 7 of 9). None is identical to the headline (checked in code). The headline reproduces the v2 literal portfolio exactly. All gaps have |t| below 1.5. Sector-neutral, value-filter, profitability-screen, universe-buffer and eight-signal variants from v1 are not rerun.
 
 
+## The five earlier robustness variants, rerun under the final specification (`27_v3_robustness_extra.py`, literal rule)
+
+| Variant | High CAGR | Benchmark CAGR | CAGR gap | Mean gap x12 | t |
+|---|---|---|---|---|---|
+| headline | 12.00% | 10.79% | +1.21% | +1.42% | 1.03 |
+| sector_neutral | 12.61% | 10.79% | +1.82% | +1.80% | 1.33 |
+| value_filter_B | 7.92% | 10.42% | -2.50% | -1.16% | -0.51 |
+| profitability_screen | 12.20% | 10.66% | +1.53% | +1.71% | 1.21 |
+| universe_buffer | 11.99% | 10.89% | +1.10% | +1.34% | 0.94 |
+| eight_signal_no_liquidity | 11.83% | 10.79% | +1.04% | +1.25% | 0.91 |
+
+Definitions are v1's, unchanged. The value-filter High bucket is as thin as 3 names on some dates. The universe-buffer variant reads the v1 rebuilt universe file (raw CRSP holds only names that were ever in the top 500). None is significant.
+
+## Book-to-market replication-lite (`30_v3_bm_replication.py`, own preregistration `output/prereg_v3_bm.md`)
+
+Inside our 500 names only: top book-to-market quintile, High-score names against that whole quintile. **This is not a replication of Piotroski (2000)**: it excludes the small value firms where he found the effect, and a real replication needs a broad-universe pull that has not been authorised.
+
+| Comparison | Test | Estimate / yr | t | p | Min detectable (80% power) |
+|---|---|---|---|---|---|
+| High - Quintile | mean | +2.33% | 0.72 | 0.471 | 9.1% |
+| High - Quintile | alpha4 | +1.37% | 0.42 | 0.676 | 9.2% |
+| High - Low | mean | +0.57% | 0.14 | 0.891 | 11.6% |
+| High - Low | alpha4 | -0.32% | -0.07 | 0.941 | 12.2% |
+
+The High bucket has a median of 5 names (17 of 21 dates under 10), and the test can only detect effects of about 9% a year, so it is uninformative rather than a refutation.
+
+## Extension to May 2026 and the REIT substitute, rerun on v3 (`28_v3_extension_2026.py`, `29_v3_reit_liquidity.py`; descriptive only)
+
+- Extension (2025 list held to May 2026): High CAGR June 2005 to May 2026 11.44% (v1 specification) vs 13.39% (v3) against the all-included benchmark's 11.29%; High minus benchmark mean gap x12 +2.27% (t 1.47). The change from v1 comes mainly from a much smaller 2025 High list under the literal rule (33 names).
+- REIT substitute (che/lt for the liquidity signal): High CAGR 12.00% without it, 11.43% with it; High minus all-included benchmark mean gap x12 +1.42% to +0.88%. Adding REITs makes High slightly worse against both benchmarks in v1 and in v3.
+
+
 ## Issuance signal drift and bucket size
 
 The signal pass rate rises over the sample under both rules (literal 8.8% in FY2004 to 37.1% in FY2024; net 45.7% to 84.4%), so High membership clusters in later years. Literal-rule High holds between 14 and 59 names a year (net 46 to 107); thin buckets are noisy. Per-year counts: `output/spec_v3/high_count_and_passrate_by_year_v3.csv`.
@@ -85,11 +117,11 @@ The signal pass rate rises over the sample under both rules (literal 8.8% in FY2
 
 ## Known limits and work not done
 
-- Fundamentals are current-vintage Compustat dated by original filing date; `ib` and `prstkc` came from separate pulls. Point-in-time testing exists only to FY2014 (98.5% of scores unchanged then); `comp_snapshot` is denied, so FY2015-24 exposure is unmeasured.
+- Fundamentals are current-vintage Compustat dated by original filing date; `ib` and `prstkc` came from separate pulls, but a single-vintage pull (`12d_single_vintage_pull.py`) matches them on every cell. Compustat point-in-time testing exists only to FY2014 (98.5% of scores unchanged then); `comp_snapshot` is denied. For FY2015-24 a sample check against SEC as-filed data (`26b_sec_vintage_check.py`, 119 usable firm-years, simple tag map) found 91.6% of scores unchanged, 5.0% changing bucket (all involving Middle; no High-to-Low jumps; all 26 High stayed High). It is a sample with a lenient tag map and likely overstates presentation-driven revisions, but the exposure is measured and larger than in 2005-15.
 - Under the net rule a missing `prstkc` now makes the signal unknown and the firm-year unscorable (prereg D); that sensitivity therefore scores fewer firm-years.
 - The literal rule treats a negative `sstk` as no issuance (paper: nothing issued), fixed after an audit found it failing them; all v3 numbers are from after that fix.
-- The extension and REIT variant (scripts 09-10) are still on the earlier specifications; the 100/100 long-short is rerun on v3 as an illustration (script 25). Scripts 08 robustness is replaced by 22 for the variants listed above; the rest of the v1 variants are not rerun.
-- Not done: single-vintage pull, pull hashing, book-to-market replication. Raw pulls are hashed after the fact (`24_hash_raw.py`), not inside each pull script.
+- The extension, REIT variant and 100/100 long-short are rerun on v3 (scripts 28, 29, 25); the 100/100 is an illustration. The v1 scripts 09-11 remain as the archived specification. Scripts 08 robustness is replaced by 22 for the variants listed above; the rest of the v1 variants are not rerun.
+- Not done: a full-market book-to-market replication. Raw pulls are hashed after the fact (`24_hash_raw.py`), not inside each pull script.
 - This universe (the 500 largest) is not a test of Piotroski's claim, which concerns high book-to-market firms; the paper itself finds the effect weak among the largest firms.
 
 ## Conclusion
