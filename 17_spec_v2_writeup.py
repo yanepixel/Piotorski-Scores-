@@ -11,6 +11,9 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import sys as _sys
+if "--regenerate-v2-archive" not in _sys.argv:
+    _sys.exit("17_spec_v2_writeup.py is superseded by 21_v3_writeup.py and would overwrite output/writeup.md. Pass --regenerate-v2-archive to run it anyway.")
 import pandas as pd
 from scipy import stats as st
 
@@ -95,8 +98,8 @@ TT = lambda r, f="tests_v2.csv": S(f, f"{r.series} | {r.test} | {r.period}")
 
 # hand-copied figures: text -> origin
 HAND = {
-    "-5.29%": "an audit script not included in this repository: unscored names' gross return 5.29% a year below the all-included benchmark in 2015-25; not written by scripts 12-17",
-    "4.88%": "an audit script not included in this repository, unscored names' gross CAGR 2015-25", "10.83%": "an audit script not included in this repository, all-included benchmark gross CAGR 2015-25",
+    "-5.29%": "verification/audit_43_v2_audit.py: unscored names' gross return 5.29% a year below the all-included benchmark in 2015-25; not written by scripts 12-17",
+    "4.88%": "verification/audit_43_v2_audit.py, unscored names' gross CAGR 2015-25", "10.83%": "verification/audit_43_v2_audit.py, all-included benchmark gross CAGR 2015-25",
     "0.017": "Piotroski (2000) Table 4, large firms, High minus All, as given by the project lead", "0.872": "Piotroski (2000) Table 4, large firms t-statistic, as given by the project lead",
     "0.088": "Piotroski (2000) Table 4, small firms, High minus All", "2.456": "Piotroski (2000) Table 4, small firms t-statistic",
     "1,480": "restatement test, verification/data_audit_phase2_3.md via the v1 write-up", "98.5%": "same", "0.2%": "same", "55": "same", "97.3%": "same", "0.45%": "same",
@@ -320,7 +323,7 @@ w("## The two benchmarks\n")
 unsc = reasons.shape[0]
 w(f"The all-included benchmark holds {cnt(tot_u2, S('drops_by_date_v2.csv', 'sum d_unscored_v2'))} list rows that have no score (of {cnt(tot_inc, S('drops_by_date_v2.csv', 'sum included'))}). They sit in the benchmark with their actual returns but cannot be in High, Middle or Low, "
   f"and {pct(reit2 / tot_u2, S('drops_by_date_v2.csv', 'unscored_in_sectors_40_60_v2 / d_unscored_v2'), 1)} of them are in GICS sectors 40 and 60 (REITs, which have no current assets or liabilities to score, and real estate). "
-  f"Over 2015-25 they ran {HAND and '-5.29%'} a year behind the all-included benchmark, a gross figure (before costs): a CAGR of {HAND and '4.88%'} against {HAND and '10.83%'} (computed by an audit script that is not included in this repository, not by the scripts that write the v2 tables). The effect is that the all-included benchmark runs "
+  f"Over 2015-25 they ran {HAND and '-5.29%'} a year behind the all-included benchmark, a gross figure (before costs): a CAGR of {HAND and '4.88%'} against {HAND and '10.83%'} (`verification/audit_43_v2_audit.py`, which is not one of the scripts that write the v2 tables). The effect is that the all-included benchmark runs "
   f"{pct(-bench_gap.excess_return_annual, S('versus_v2.csv', 'BenchmarkScored vs Benchmark excess_return_annual'), 2)} a year below the scored-only one in mean annual excess return (the gap in compound growth, CAGR, is {pct(-bench_gap.cagr_difference, S('versus_v2.csv', 'BenchmarkScored vs Benchmark cagr_difference'), 2)}), "
   f"so it flatters every scored bucket by about that much: High's excess is {pct(ex.estimate_annual, TT(ex), 2, True)} against the first and {pct(exs.estimate_annual, TT(exs), 2, True)} against the second. "
   f"Neither is significant. Report both together; neither is the 'right' one. The scored-only benchmark compares like with like; the all-included one is the market of everything on the list.\n")
@@ -445,8 +448,13 @@ for line in [
 w("")
 w("**Timing of the specification.**\n")
 for line in [
-    "The v2 rules were first committed in the project's working repository (those commits are not part of this public repository's history) on 2026-11-01 at 23:01, before any v2 return existed. Between the pre-return score report and the first v2 return file (created 2026-11-02 17:25:08) three more commits changed the specification: one at 17:18 revised the issuance rule from `sstk > 0` to `sstk` net of `prstkc`, because the literal rule flagged 77% of firm-years as issuers (option-exercise proceeds); one at 17:19 locked clarifications raised by the independent rebuild; and one at 17:22 locked the hold-flat treatment of Maxim (2007-11 to 2008-05) and General Growth (2009-05) in the benchmark. No v2 return existed before 17:25. Since the 17:22 commit, `config.py` changed only by the `HEADLINE_SPEC` line and a comment on the `SPEC_V2` line (a later commit at 17:42). The small-sample correction for the standard errors, T/(T-k), was suggested during review but was not in the locked configuration, so it is a reported sensitivity, not the as-run convention. The 3-day buffer is an assumption, not a derived number. Some auditors compared v1 returns of dropped rows before the older-year clarification was settled; no v2 return was read.",
-    "v2 itself was specified after v1's results were known, so it is not a blind test of a fresh hypothesis. The claims in the archived v1 write-up about when its own rules were set rest on the project lead's account, as that write-up says; no file can show the order of events.",
+    "The v2 rules were first committed in 5ce0e23 (2026-11-01 23:01), before any v2 return existed. Between the pre-return score report and the first v2 return file (2026-11-02 17:25:08) three more commits changed the specification: "
+    "9865622 (17:18) revised the issuance rule from `sstk > 0` to `sstk` net of `prstkc`, because the literal rule flagged 77% of firm-years as issuers (option-exercise proceeds); "
+    "a054143 (17:19) locked clarifications raised by the independent rebuild's questions; and 24d636f (17:22) locked the hold-flat treatment of Maxim (2007-11 to 2008-05) and General Growth (2009-05) in the benchmark. "
+    "No v2 return existed before 17:25. Since 24d636f, `config.py` changed only by the `HEADLINE_SPEC` line and a comment on the `SPEC_V2` line (commit 600824d). "
+    "The small-sample correction for the standard errors, T/(T-k), was in the coordinating session's briefing but was not in the locked configuration, so it is a reported sensitivity, not the as-run convention. "
+    "The 3-day buffer is an assumption, not a derived number. Some auditors compared v1 returns of dropped rows before the older-year clarification was settled; no v2 return was read.",
+    "v2 itself was specified after v1's results were known, so it is not a blind test of a fresh hypothesis. The claims in the archived v1 write-up about when its own rules were set rest on the project coordinator's account, as that write-up says; no file can show the order of events.",
     "The builds share the same data and several of the same rules, so an independent rebuild checks the arithmetic and the implementation, not whether the rules are the right ones or the data true.",
 ]:
     w(f"- {line}")
@@ -466,7 +474,7 @@ w("")
 # ---- verification ----
 w("## Verification\n")
 w("Every number in the results tables was recomputed from the monthly return file with separate numpy/scipy code (`16_spec_v2_numcheck.py`; reports in `output/spec_v2/numcheck_v2.md`), and the figures in this write-up are generated from the v2 files by `17_spec_v2_writeup.py`, "
-  "with their sources in `output/spec_v2/writeup_figures_v2.csv`. Checked at the end state in the project folder: git shows no change to scripts 01 to 11 or to the v1 outputs since the v1 commit, and the earlier raw files match the hash values logged for them (in the project's `output/logs/pull_raw_hashes.csv` and the two v2 pull logs, which are not in the public repository, and in `output/logs/raw_hashes_added.csv`, which is; the last was recorded after the fact). There is no per-stage hash record for the cleaned data in `data/clean`. `00_test_wrds.py`, `requirements.txt`, `config.py` and `CLAUDE.md` were edited after the v2 returns, for additions and wording only. The data files are licensed and are not in the public repository, so the raw-file hashes cannot be checked from the public copy. Independent rebuilds and audits of v2 are separate reports in `verification/`; this write-up uses one figure from them (the unscored names' return, above), and the audit scripts are not included in this repository. "
+  "with their sources in `output/spec_v2/writeup_figures_v2.csv`. Checked at the end state in the project folder: git shows no change to scripts 01 to 11 or to the v1 outputs since the v1 commit, and the earlier raw files match the hash values logged for them (`output/logs/pull_raw_hashes.csv`, the two v2 pull logs and `output/logs/raw_hashes_added.csv`, the last recorded after the fact). There is no per-stage hash record for the cleaned data in `data/clean`. `00_test_wrds.py`, `requirements.txt`, `config.py` and `CLAUDE.md` were edited after the v2 returns, for additions and wording only. The data files are licensed and are not in the public repository, so the raw-file hashes cannot be checked from the public copy. Independent rebuilds and audits of v2 are separate reports in `verification/`; this write-up cites two of their scripts (`audit_43_v2_audit.py` for the unscored names' return, and the write-up trace audit) and does not otherwise restate their conclusions. "
   "A rebuild does not test the rules and data the builds share.\n")
 
 # ---- runs on v1 ----
@@ -492,7 +500,7 @@ fig = pd.concat([fig, pd.DataFrame([{"figure": k, "source": f"HAND-COPIED: {v}"}
 fig.insert(0, "universe_label", LABEL)
 fig.to_csv(V2 / "writeup_figures_v2.csv", index=False)
 
-STRUCT = {"42": "git commit time 17:42", "17": "git commit time (17:18, 17:19, 17:25) as given by the project lead", "19": "git commit time 17:19", "22": "git commit time 17:22", "23": "git commit time 23:01", "77": "77% of firm-years flagged by the literal rule (config.py comment, pre-return report)", "1.7": "paper difference +0.017 written as points", "100": "100/100 label", "18": "MAX_SCORE_AGE_MONTHS", "1994": "year of the Newey-West paper", "500": "UNIVERSE_SIZE", "40": "GICS sector code", "60": "GICS sector code", "95": "95% range"}
+STRUCT = {"17": "git commit time (17:18, 17:19, 17:25) as given by the coordinating session", "19": "git commit time 17:19", "22": "git commit time 17:22", "23": "git commit time 23:01", "77": "77% of firm-years flagged by the literal rule (config.py comment, pre-return report)", "1.7": "paper difference +0.017 written as points", "100": "100/100 label", "18": "MAX_SCORE_AGE_MONTHS", "1994": "year of the Newey-West paper", "500": "UNIVERSE_SIZE", "40": "GICS sector code", "60": "GICS sector code", "95": "95% range", "9865622": "commit"}
 known = set(STRUCT) | {re.sub(r"[+%,]", "", s) for s, _ in TRACE} | {re.sub(r"[+%,]", "", k) for k in HAND}
 generated = text.replace(CARRIED_A, "").replace(CARRIED_B, "")
 untraced = []

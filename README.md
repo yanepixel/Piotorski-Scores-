@@ -35,7 +35,7 @@ Scripts use the `PGUSER` environment variable if it is set, otherwise the userna
 
 ## Run order
 
-Run from this folder, in the order below (the spec_v2 scripts 12a, 12c, 12b are not in numeric order; see the note after the table). All rules are in `config.py`, and `CLAUDE.md` is the brief and the record of decisions.
+Run from this folder, in the order below. All rules are in `config.py`, and `CLAUDE.md` is the brief and the record of decisions. The current headline is v3 (`output/prereg_v3.md`); scripts marked "archived" produce the earlier specifications and the shared stages that v3 reads.
 
 | Script | What it does | Uses WRDS |
 |---|---|---|
@@ -43,56 +43,55 @@ Run from this folder, in the order below (the spec_v2 scripts 12a, 12c, 12b are 
 | `01_build_universe.py` | Builds the 21 yearly lists | Yes |
 | `02_pull_data.py` | Pulls fundamentals, filing dates, sectors, returns, benchmarks, factors | Yes |
 | `03_clean.py` | Cleans fundamentals and sets availability dates | Yes, company names only |
-| `04_scores.py` | Computes F-scores and the hand-check sample | No |
-| `05_align.py` | Attaches the score known on each formation date | No |
-| `06_portfolios.py` | Builds monthly portfolio returns | No |
-| `07_evaluate.py` | Performance, regressions, year-by-year table, charts | No |
-| `08_robustness.py` | Reruns with one setting changed each time; pulls quarterly data | Yes |
-| `09_reit_liquidity.py` | Labelled variant: REIT liquidity substitute | Yes, first run |
-| `09a_extension_pull.py` | Pulls and validates Compustat returns for 2026; maps securities | Yes |
-| `10_extension_2026.py` | Labelled extension to May 2026 | No |
-| `10a_extension_contributors.py` | Name-level contributors to January-May 2026 | No |
-| `11_long_short.py` | Labelled variant: 100/100 long/short | No |
-| `12a_spec_v2_pull.py` | spec_v2: pulls income before extraordinary items (`ib`) | Yes |
-| `12c_spec_v2_pull_prstkc.py` | spec_v2: pulls stock repurchases (`prstkc`) for the net-issuance test | Yes |
-| `12b_spec_v2_scores.py` | spec_v2: scores and lists. Run `python 12b_spec_v2_scores.py` (net rule, primary) and `python 12b_spec_v2_scores.py --rule literal` (sensitivity) | No |
-| `13_spec_v2_portfolios.py` | spec_v2: monthly portfolio returns, same `--rule` option | No |
-| `14_spec_v2_evaluate.py` | spec_v2: performance, tests, Holm, power, sensitivities, same `--rule` option | No |
-| `15_spec_v2_drops.py` | spec_v2: drops by formation date, v1 beside v2 | No |
-| `16_spec_v2_numcheck.py` | spec_v2: recomputes the headline numbers with separate code, same `--rule` option | No |
-| `17_spec_v2_writeup.py` | spec_v2: writes `output/writeup.md` from the v2 files and records the source of each figure | No |
+| `04_scores.py`, `05_align.py`, `06_portfolios.py`, `07_evaluate.py` | v1 scores, lists, portfolios and tables (archived first specification) | No |
+| `08_robustness.py`, `09_reit_liquidity.py`, `09a_extension_pull.py`, `10_extension_2026.py`, `10a_extension_contributors.py`, `11_long_short.py` | v1 robustness, extension and labelled variants (archived; `09a` pulls 2026 returns) | Some |
+| `12a_spec_v2_pull.py`, `12c_spec_v2_pull_prstkc.py` | v2: pull `ib` and `prstkc` | Yes |
+| `12d_single_vintage_pull.py` | v3: pulls every score input in one query with one timestamp and compares with the separate pulls | Yes |
+| `12b_spec_v2_scores.py` | Scores and lists. Run `--rule literal` (v3 primary) and `--rule net` (sensitivity), literal first | No |
+| `13_spec_v2_portfolios.py`, `14_spec_v2_evaluate.py` | Portfolio returns, performance and tests, same `--rule` option | No |
+| `15_spec_v2_drops.py` | Drops by formation date | No |
+| `16_spec_v2_numcheck.py` | Arithmetic recheck of the v2 headline numbers (reads the same portfolio file as the evaluator; not an independent check) | No |
+| `17_spec_v2_writeup.py` | Superseded by `21`; refuses to run unless given `--regenerate-v2-archive`, because it would overwrite `output/writeup.md` | No |
+| `18_v3_inference.py` | v3 tests: High minus benchmark, High minus Low, Holm family, post-hoc labels, trial bound | No |
+| `19_v3_numcheck.py` | Independent check: F-scores from raw Compustat, gross returns from raw CRSP | No |
+| `20_v3_cost_sensitivity.py` | Costs at 0, 5, 10, 20, 50 bp | No |
+| `22_v3_robustness.py`, `27_v3_robustness_extra.py` | v3 robustness variants (22: cutoff, weighting, availability, missing signals; 27: the five earlier variants) | No |
+| `23_v3_null_return_rule.py` | Exit-rule sensitivity and delisting-return check | No |
+| `24_hash_raw.py` | Hashes the raw files; `--compare OTHER` checks a second pull | No |
+| `25_v3_long_short.py` | 100/100 long-short illustration | No |
+| `26a_pull_cik.py`, `26b_sec_vintage_check.py` | SEC as-filed restatement sample for FY2015-24 (downloads from SEC.gov; cached in `data/external/`) | 26a only |
+| `28_v3_extension_2026.py`, `29_v3_reit_liquidity.py` | Extension to May 2026 and the REIT substitute on v3 | No |
+| `30_v3_bm_replication.py` | Book-to-market replication-lite inside the 500 names (own preregistration `output/prereg_v3_bm.md`) | No |
+| `21_v3_writeup.py` | Writes `output/writeup.md` and the answer section of this README from the v3 tables; run last | No |
 
-A script exits with code 1 if one of its checks fails, and most write their outputs first so the failure can be inspected. `11_long_short.py` stops if `10_extension_2026.py`'s output is missing or older than its inputs.
+Tests: `python tests/test_signals.py` (or `python -m pytest tests`). A script exits with code 1 if one of its checks fails. The scripts that need `10_extension_2026.py`'s output stop if it is missing.
 
-Order for the headline: scripts 00 to 07 give the data, universe and the v1 files that v2 reads; then `12a`, `12c`, `12b` (literal first, then net, because the net report quotes the literal pass rate), `13`, `14`, `16` (each net, then literal), `15`, `17`. `08` to `11` (robustness, REIT liquidity substitute, 2026 extension, long/short) are v1-specification runs: they are **not rerun under v2**, and the write-up labels them that way. `07_evaluate.py` and the other v1 scripts are unchanged and still write the v1 tables, but `output/writeup.md` and `output/checkpoint3_results.md` were moved: the v1 versions are in `output/archive_v1/`, so rerunning `07_evaluate.py` recreates `output/checkpoint3_results.md` in `output/`.
-
-The brief has three stop points for human review (Checkpoints 1, 2 and 3 in `CLAUDE.md`). They were passed for the v1 results. spec_v2 was approved separately by the user as the headline (`CLAUDE.md` section 8f); a rerun does not pause for any of them.
+Order for the headline: `00` to `07` give the data and universe; then `12a`, `12c`, `12d`, `12b` (literal, then net), `13`, `14`, `15`, then `18` to `20`, `22` to `26`, `27` to `30`, and `21` last. Checkpoints 1 to 3 in `CLAUDE.md` were passed for v1; v2 and v3 were approved separately (sections 8f to 8h).
 
 ## Where outputs go
 
 | Folder | Contents |
 |---|---|
-| `data/raw/` | Pulled data, not in the repository |
+| `data/raw/`, `data/external/` | Pulled data and SEC downloads, not in the repository |
 | `data/clean/` | Universe, cleaned fundamentals, scores, formation lists |
-| `output/writeup.md` | The write-up for spec_v2 (the headline): start here |
-| `output/archive_v1/` | The superseded first specification's write-up and Checkpoint 3 results, unchanged apart from a note at the top |
-| `output/spec_v2/` | spec_v2 tables, reports and checks. In the project folder, `literal_sensitivity/` holds the full run under the literal issuance rule; the public repository carries only its `headline_v2.csv` and `tests_v2.csv` |
-| `output/tables/`, `output/charts/` (v1) | The v1 tables and charts, unchanged; the headline is in `output/spec_v2/` |
-| `output/logs/` | Row counts, drop reasons and checks for the v1 scripts 00 to 11, and `raw_hashes_added.csv`. The spec_v2 scripts (12a to 17) write their logs and checks into `output/spec_v2/` instead (`pull_*_log.md`, `scores_checks_v2.md`, `portfolio_checks_v2.md`, `report_v2.md`, `drops_summary_v2.md`, `numcheck_v2.md`) |
-| `output/robustness/` | Each robustness variant and its report |
-| `output/extension_2026/`, `output/reit_liquidity_substitute/`, `output/long_short_100_100/` | Labelled runs, none of them the headline |
-| `verification/` | Reports of independent rebuilds and audits. The public repository carries the reports only (some trimmed of company-level values); the rebuild and audit scripts and their data are not in it |
+| `output/writeup.md` | The v3 write-up: start here |
+| `output/prereg_v3.md`, `output/prereg_v3_bm.md` | Decisions fixed before the v3 runs and the book-to-market run |
+| `output/spec_v3/` | v3 tables and reports (tests, headline, costs, robustness, extension, REIT, long-short, book-to-market, SEC check, number check) |
+| `output/spec_v2/` | v2 tables and checks (the v3 portfolios still come from here: `literal_sensitivity/` is the v3 primary series) |
+| `output/archive_v1/`, `output/archive_v2/` | The superseded write-ups |
+| `output/tables/`, `output/charts/` (v1) | The v1 tables and charts, unchanged |
+| `output/logs/` | Row counts, drop reasons and checks for the v1 scripts, and the raw-file hashes |
+| `output/robustness/`, `output/extension_2026/`, `output/reit_liquidity_substitute/`, `output/long_short_100_100/` | The v1 labelled runs |
+| `verification/` | Reports of independent rebuilds, audits and reruns. `verification/README.md` lists them. The public repository carries the reports only (some trimmed of company-level values) |
 
 ## Raw data is write-once
 
 Files in `data/raw/` are never edited.
 
 - `02_pull_data.py` refuses to run and exits with code 1 if any of its raw files exist.
-- `08_robustness.py`, `09_reit_liquidity.py` and `09a_extension_pull.py` reuse their raw file if it exists, without pulling again. `12a_spec_v2_pull.py` and `12c_spec_v2_pull_prstkc.py` refuse to replace theirs.
+- `08_robustness.py`, `09_reit_liquidity.py` and `09a_extension_pull.py` reuse their raw file if it exists. `12a`, `12c`, `12d` and `26a` refuse to replace theirs.
 - All of them replace raw files only if you pass `--overwrite`.
 
 ## Later pulls may differ
 
-WRDS revises its data, and recent Compustat rows change most often. `01_build_universe.py` and `03_clean.py` also read WRDS directly on each run. So a later rerun can differ from the stored results even with identical code. For the v1 pipeline (scripts 00 to 11), a rerun on the same data from no data folder, in the order above, reproduced the same data files, tables and charts. Only logs differed: timestamps, appended rows, the row order of one log, and a hand-added note and two date lines in `output/logs/pull_checks.md`. That run used the same machine, saved login and same-day data. Compare with `output/logs/pull_raw_hashes.csv` to see whether the raw data changed.
-
-That clean-copy reproducibility test was done for v1 only. It has not yet been done for the spec_v2 scripts (12a to 17).
+WRDS revises its data, and recent Compustat rows change most often. `01_build_universe.py` and `03_clean.py` also read WRDS directly on each run, so a later rerun can differ from the stored results even with identical code. A same-day rerun from an empty folder with fresh pulls reproduced every v3 result table byte for byte (`verification/clean_folder_rerun_v3_full.md`); a different vintage has not been tested.
