@@ -41,25 +41,25 @@ CHART_INK, CHART_MUTED, CHART_BAR, CHART_SURFACE = "#1a1a19", "#6b6a65", "#2a78d
 
 # My reading of each join, from the values around it. Report only: the user decides.
 JOIN_READINGS = {
-    "004060": "Likely invalid. Dow became DowDuPont in FY2017 (assets changed), so FY2017 and FY2018 mix two companies. The FY2019 split (assets changed, sales changed) keeps the same PERMCO, so it is not in this table but has the same problem.",
-    "026061": "Likely invalid. IAC's record becomes the separated Match in FY2020 (assets changed, sales changed), so FY2020 and FY2021 compare different companies.",
-    "032280": "Likely invalid. Liberty restructuring: FY2011 sales changed, and that score is on the 2012 list. FY2012 (assets changed) is not scored.",
-    "005073": "Not in use: FY2009-2011 are not scored, so no comparison across the bankruptcy reaches a list. FY2009 includes a large one-off gain and FY2010 shares changed, so these would need review if they were ever scored.",
-    "014489": "Likely invalid on the share test for FY2018: shares changed around the Class V exchange. FY2019's prior-year ratios look like the same business.",
-    "005568": "Likely invalid for FY2016's F_DROA and F_DTURN. Prior-year ratios divide merged FY2015 income and sales (assets changed, sales changed) by pre-merger FY2014 Heinz assets. FY2013-2015 are not scored.",
-    "007637": "Looks valid: Mylan continues as acquirer. Assets changed and shares changed in FY2020 reflect a real deal.",
-    "164296": "Looks valid: Discovery continues as acquirer. Large deal in FY2022 (assets changed, sales changed) moves the ratios.",
+    "004060": "Likely invalid. Dow became DowDuPont in FY2017 (assets x2.42), so FY2017 and FY2018 mix two companies. The FY2019 split (assets x0.37, sales x0.25) keeps the same PERMCO, so it is not in this table but has the same problem.",
+    "026061": "Likely invalid. IAC's record becomes the separated Match in FY2020 (assets x0.36, sales x0.50), so FY2020 and FY2021 compare different companies.",
+    "032280": "Likely invalid. Liberty restructuring: FY2011 sales x4.27, and that score is on the 2012 list. FY2012 (assets x0.28) is not scored.",
+    "005073": "Not in use: FY2009-2011 are not scored, so no comparison across the bankruptcy reaches a list. FY2009 includes a $104.8bn gain and FY2010 shares x3.00, so these would need review if they were ever scored.",
+    "014489": "Likely invalid on the share test for FY2018: shares x3.61 around the Class V exchange. FY2019's prior-year ratios look like the same business.",
+    "005568": "Likely invalid for FY2016's F_DROA and F_DTURN. Prior-year ratios divide merged FY2015 income and sales (assets x3.35, sales x1.68) by pre-merger FY2014 Heinz assets. FY2013-2015 are not scored.",
+    "007637": "Looks valid: Mylan continues as acquirer. Assets x1.97 and shares x2.34 in FY2020 reflect a real deal.",
+    "164296": "Looks valid: Discovery continues as acquirer. Large deal in FY2022 (assets x3.89, sales x2.77) moves the ratios.",
     "029830": "Looks valid: RockTenn continues as acquirer of MeadWestvaco in FY2015.",
     "029984": "Not in use: not scored in these years. AMB continues as accounting acquirer of ProLogis in FY2011.",
-    "010984": "Looks valid: same business with purchase accounting in FY2013 (assets changed, sales flat). FY2014 is a flagged year, so the FY2013 score stays in use on the 2015 list.",
-    "022260": "Looks valid where used: FY2010-2012 compare years after the 2006 buyout. The FY2006 share change (changed) is scored but on no list.",
-    "004016": "Looks valid: FY2009-2010 are on lists and compare years after the 2007 buyout. FY2007 purchase accounting (assets changed) is on no list.",
+    "010984": "Looks valid: same business with purchase accounting in FY2013 (assets x1.67, sales flat). FY2014 is a flagged year, so the FY2013 score stays in use on the 2015 list.",
+    "022260": "Looks valid where used: FY2010-2012 compare years after the 2006 buyout. The FY2006 share change (x0.22) is scored but on no list.",
+    "004016": "Looks valid: FY2009-2010 are on lists and compare years after the 2007 buyout. FY2007 purchase accounting (assets x2.85) is on no list.",
     "005643": "Looks valid where used: FY2007-2011 values are null, so nothing is scored until FY2014, which compares years after the buyout.",
-    "028320": "Not in use: FY2010-2014 are scored but on no list, since it returns in 2017. Share counts near 1 million before the IPO pass the share-count floor, so FY2013's share test (changed) is an artefact.",
-    "063800": "Looks valid where used: FY2010-2011 values are null and FY2012 is not scored. FY2013-2015 compare years after the buyout, with IPO shares changed in FY2014.",
+    "028320": "Not in use: FY2010-2014 are scored but on no list, since it returns in 2017. Share counts near 1 million before the IPO pass the share-count floor, so FY2013's share test (x169) is an artefact.",
+    "063800": "Looks valid where used: FY2010-2011 values are null and FY2012 is not scored. FY2013-2015 compare years after the buyout, with IPO shares x1.20 in FY2014.",
     "028877": "Not in use: FY2016-2017 are null, FY2018 is flagged and FY2019 is not scored. The gvkey moves from Keurig Green Mountain to the Dr Pepper combination, so later years need checking only for that reason.",
-    "006310": "Looks valid where used: FY2007-2011 are not scored because shares are null. FY2012 is on a list; assets changed reflect the real El Paso deal.",
-    "012485": "Looks valid where used: FY2016-2017 are not scored around the Altice purchase (assets changed). FY2018 compares years after it.",
+    "006310": "Looks valid where used: FY2007-2011 are not scored because shares are null. FY2012 is on a list; assets x2.22 reflect the real El Paso deal.",
+    "012485": "Looks valid where used: FY2016-2017 are not scored around the Altice purchase (assets x5.31). FY2018 compares years after it.",
     "025157": "Not in use: FY2016 is scored but on no list, since it returns only in 2019.",
 }
 
@@ -372,8 +372,8 @@ def main():
     # --- PERMCO joins ---
     joins, span_keys = join_review(s, universe, links, a)
     labelled(joins).to_csv(TABLES / "permco_joins_review.csv", index=False)
-    if len(span_keys) != 20:
-        failures.append(f"Expected 20 gvkeys spanning two PERMCOs, found {len(span_keys)}")
+    if len(span_keys) != cfg.EXPECTED_SPAN_GVKEYS:
+        failures.append(f"Expected {cfg.EXPECTED_SPAN_GVKEYS} gvkeys spanning two PERMCOs, found {len(span_keys)}")
     no_read = [g for g in span_keys if g not in JOIN_READINGS]
     if no_read:
         failures.append(f"No reading written for join gvkeys {no_read}")

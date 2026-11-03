@@ -34,7 +34,8 @@ INK, MUTED, GRID, AXIS, SURFACE = "#1a1a19", "#6b6a65", "#e6e5e0", "#c9c8c2", "#
 SERIES_COLORS = {"High": "#2a78d6", "Low": "#eb6834", "Benchmark": "#1baf7a"}
 SERIES_NAMES = {"High": f"High (scores {cfg.HIGH_SCORES[0]}-{cfg.HIGH_SCORES[-1]})", "Low": f"Low (scores {cfg.LOW_SCORES[0]}-{cfg.LOW_SCORES[-1]})", "Benchmark": "Benchmark (all scored names)"}
 
-# Wording from verification/data_audit_phase4_6.md (M1), required by CLAUDE.md section 8c.
+# v1 TEXT, superseded. The figures below come from audit simulations (verification/data_audit_phase4_6.md) whose scripts are not part of this repository, so no script here reproduces them;
+# they are quoted history, not computed output. The v3 write-up (21_v3_writeup.py) does not use them.
 SUBPERIOD_CONTEXT = ("High's alpha for June 2015 to December 2025 was -3.8% a year, t -4.10 with the pre-set 12 lags (-2.47 without adjustment; -3.06 with 4 lags). "
                      "In simulations, 12 lags on 127 months overstate significance somewhat, implying a t nearer -3.4 to -4.0. Randomly chosen portfolios from the same universe also averaged -1.3%, "
                      "and 19% of them reached |t| of 2 or more. The alpha falls in the lowest 1.5% of random selections, but the lowest 11% if the random selections keep High's sector mix. "

@@ -110,9 +110,9 @@ def compute_scores_v2(df):
     d["sstk_negative"] = d.sstk < 0
     d["net_issue"] = d.sstk.fillna(0) - d.prstkc.fillna(0)
     if RULE == "net":
-        d["F_EQ_OFFER"] = (d.net_issue <= 0).astype(float)           # 1 if sstk - prstkc <= 0, nulls count 0
+        d["F_EQ_OFFER"] = (d.net_issue <= 0).astype(float).where(d.prstkc.notna())   # 1 if sstk - prstkc <= 0; a missing prstkc makes the signal UNKNOWN (prereg_v3 D), so the firm-year is unscorable under this sensitivity
     else:
-        d["F_EQ_OFFER"] = (~(d.sstk.fillna(0) != 0)).astype(float)   # 1 if sstk is 0 or null; negative or positive fails
+        d["F_EQ_OFFER"] = (d.sstk.fillna(0) <= 0).astype(float)   # paper: 1 if no common equity issued, i.e. sstk not positive (null and negative pass; prereg_v3 D)
     d["F_DMARGIN"] = signal(d.DMARGIN > 0, d.DMARGIN)
     d["F_DTURN"] = signal(d.DTURN > 0, d.DTURN)
     d["signals_computable"] = d[SIGNALS].notna().sum(axis=1)

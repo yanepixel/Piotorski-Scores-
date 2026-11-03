@@ -107,8 +107,8 @@ def main():
         t2 = b2[0] / se2[0]
         p2 = 2 * st.t.sf(abs(t2), df2)
         fam_p += [p1, p2]
-        mde1 = (st.t.ppf(0.975, df1) + st.t.ppf(0.8, df1)) * se1[0] * 12
-        mde2 = (st.t.ppf(0.975, df2) + st.t.ppf(0.8, df2)) * se2[0] * 12
+        mde1 = (st.t.ppf(1 - cfg.SPEC_V2['alpha_level'] / 2, df1) + st.t.ppf(cfg.SPEC_V2['power_level'], df1)) * se1[0] * 12
+        mde2 = (st.t.ppf(1 - cfg.SPEC_V2['alpha_level'] / 2, df2) + st.t.ppf(cfg.SPEC_V2['power_level'], df2)) * se2[0] * 12
         for test, est, se, t, pv, mde_v in [("raw excess vs primary benchmark (all included)", b1[0] * 12, se1[0] * 12, t1, p1, mde1), ("alpha, Mkt-RF+SMB+HML+MOM (excess of rf)", b2[0] * 12, se2[0] * 12, t2, p2, mde2)]:
             row = tests[(tests.series == "High") & (tests.test == test) & (tests.period == label)].iloc[0]
             cmp(f"{label} | {test} | estimate", est, row.estimate_annual, TOL_LEVEL)

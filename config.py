@@ -1,5 +1,5 @@
 """
-Piotroski F-Score Backtest — Top-500 S&P 500 proxy (WRDS)
+Piotroski F-Score Backtest â€” Top-500 S&P 500 proxy (WRDS)
 Locked rules. Do not edit after seeing results; any change = a new, labelled run.
 
 Descriptive only, not read by any script: DATA_SOURCE, UNIVERSE, UNIVERSE_BUFFER, HEADLINE_VERSION,
@@ -153,6 +153,7 @@ NULL_RETURN_HOLD_FLAT_MONTHS = {      # the only approved cases, by variant and 
     "eight_signal_no_liquidity": {79129: ["2009-05"]},  # General Growth
     "reit_liquidity_substitute": {79129: ["2009-05"]},  # General Growth
     "universe_buffer": {10942: ["2007-02", "2007-03", "2007-04", "2007-05"]},  # Comverse Technology
+    "spec_v2_reruns": {79129: ["2009-05"], 11896: ["2007-11", "2007-12", "2008-01", "2008-02", "2008-03", "2008-04", "2008-05"]},  # added 2026-11-02 before any rerun result; General Growth if held in a REIT-rerun bucket, Maxim as in spec_v2
     "spec_v2": {11896: ["2007-11", "2007-12", "2008-01", "2008-02", "2008-03", "2008-04", "2008-05"],  # Maxim Integrated, unscored, all-included benchmark only
                 79129: ["2009-05"]},  # General Growth, unscored in v2, all-included benchmark only; held flat, no charge, set before any v2 return
 }
@@ -201,7 +202,8 @@ REIT_LIQUIDITY_SUBSTITUTE = {         # post-write-up labelled variant, not in R
     "buckets": "standard",            # 0-9 scale, so HIGH_SCORES and LOW_SCORES apply
     "null_return_rule": "hold_flat",  # General Growth, May 2009 only; any other held null stops the run
 }
-HEADLINE_SPEC = "spec_v2"             # designated by the user on 2026-11-02; v1 outputs are kept unchanged as the superseded first specification
+EXPECTED_SPAN_GVKEYS = 20          # data-quality guard in 04_scores.py: gvkeys whose rows span two PERMCOs; moved here from a hard-coded 20 (v3 review H5)
+HEADLINE_SPEC = "spec_v3"             # v3 corrections (output/prereg_v3.md) sit on the spec_v2 pipeline; SPEC_V2 below still defines its mechanics             # designated by the user on 2026-11-02; v1 outputs are kept unchanged as the superseded first specification
 SPEC_V2 = {                           # re-specification after external review; now the headline; v1 outputs stay untouched
     "label": "spec_v2",
     "output_dir": "output/spec_v2",
@@ -213,7 +215,7 @@ SPEC_V2 = {                           # re-specification after external review; 
     "availability_buffer_days": 3,    # filing date + this many calendar days must be on or before the formation date; an assumption
     "primary_benchmark": "equal_weight_all_included",   # scored and unscored included names; the scored-only benchmark is reported beside it
     "charge_every_trade": True,       # mid-period reinvestment after an exit is charged TRANSACTION_COST_BPS on the value reinvested, one side (the purchase), in the exit month; the exit itself is not a trade and an exit in the final holding month needs no reinvestment (CLAUDE.md 8f clarifications 7 and 10)
-    "hac_lag_rule": "newey_west_1994_automatic",        # the fixed formula floor(4 * (T / 100) ** (2 / 9)), which replaces the fixed 12 lags; NOT the data-dependent Newey-West (1994) bandwidth the key name suggests
+    "hac_lag_rule": "hac_lag_formula_floor_4_T_over_100_pow_2_9",        # the fixed formula floor(4 * (T / 100) ** (2 / 9)), which replaces the fixed 12 lags; NOT the data-dependent Newey-West (1994) bandwidth the key name suggests
     "small_sample": "t_distribution_T_minus_k",         # critical values and p-values from t with T - k degrees of freedom
     "primary_tests": ["raw_excess_vs_primary_benchmark", "mkt_smb_hml_mom"],   # six-factor alpha is secondary because RMW overlaps the screen
     "multiple_testing": "holm_over_prespecified_family",   # family: full period and the two SUBPERIODS from the original config
@@ -224,5 +226,15 @@ SPEC_V2 = {                           # re-specification after external review; 
     "sensitivity_lags": [6, 12],     # added after the first v2 returns: the two extra lag counts that script 14 reports beside the automatic lag
     "sensitivity_small_sample_correction": True,   # added after the first v2 returns: also report the automatic lag with covariance multiplied by T / (T - k)
 }
-BUFFER_FIRST_LIST = "top_500"       # 2005 has no history; membership tracks PERMCO on the pre-exclusion ranking
+V2_RERUNS = {                         # the three labelled v1-specification runs, rerun on spec_v2 inputs; locked 2026-11-02 before any rerun result
+    "label": "spec_v2_reruns",
+    "rule": "same definitions as EXTENSION_2026, REIT_LIQUIDITY_SUBSTITUTE and LONG_SHORT_100_100; only the inputs change to the spec_v2 scores, lists, benchmark and cost mechanics",
+    "output_dirs": {"extension": "output/spec_v2/extension_2026", "reit": "output/spec_v2/reit_liquidity_substitute", "long_short": "output/spec_v2/long_short_100_100"},
+    "extension_portfolio": "spec_v2 net rule, 2025 list, weights drifted to end-2025, held January-May 2026 with comp.secm trt1m under the four EXTENSION_2026 conditions",
+    "reit_applies_to": "spec_v2 REIT rows where F_DLIQUID is the only uncomputable signal; ratio che / lt as in REIT_LIQUIDITY_SUBSTITUTE; ib, net issuance and the v2 availability rules apply to the other signals",
+    "long_short_series": "gross High and gross Low from the spec_v2 net-rule run, with the LONG_SHORT_100_100 mechanics (annual reset at 0.50% and 2.00% borrow, monthly reset charged view, spread comparison), to December 2025 and to May 2026",
+    "tests": "descriptive only: reported beside the v1-specification versions; not added to the Holm family; counted in the trial log",
+    "no_new_rules": True,             # anything a rerun needs that no rule covers stops the run and goes to the master
+}
+BUFFER_FIRST_LIST = "top_500"      # 2005 has no history; membership tracks PERMCO on the pre-exclusion ranking
 BUFFER_NULL_RETURN_RULE = "hold_flat" # no return, not an exit; sold at last value at the next rebalance: Comverse Technology, 2007-02 to 2007-05

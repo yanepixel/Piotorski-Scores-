@@ -36,7 +36,7 @@ CHARGED = ["High", "Middle", "Low", "Benchmark", "BenchmarkScored"]
 ALPHA, POWER = V2["alpha_level"], V2["power_level"]   # size and power of the minimum-detectable-effect calculation (SPEC_V2)
 LAG_A, LAG_B = V2["sensitivity_lags"]                # the two extra lag counts reported beside the automatic lag (SPEC_V2)
 # SPEC_V2 keys that name the one behaviour implemented below: stop if the config says otherwise
-assert V2["hac_lag_rule"] == "newey_west_1994_automatic" and V2["small_sample"] == "t_distribution_T_minus_k", "HAC lag rule or small-sample rule differs from the code"
+assert V2["hac_lag_rule"] == "hac_lag_formula_floor_4_T_over_100_pow_2_9" and V2["small_sample"] == "t_distribution_T_minus_k", "HAC lag rule or small-sample rule differs from the code"
 assert V2["multiple_testing"] == "holm_over_prespecified_family" and V2["primary_tests"] == ["raw_excess_vs_primary_benchmark", "mkt_smb_hml_mom"], "test family differs from the code"
 assert V2["primary_benchmark"] == "equal_weight_all_included" and V2["report_power"] is True, "benchmark or power reporting differs from the code"
 

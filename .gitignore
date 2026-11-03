@@ -37,3 +37,8 @@ output/extension_2026/validation.md
 
 # Hashes of raw files (names, sizes, row counts, hashes only; no data values)
 !output/logs/raw_hashes_added.csv
+
+# v3 summary tables (portfolio level, no company values) and raw-file hashes
+!output/spec_v3/*.csv
+!output/logs/raw_hashes_v3.csv
+!output/logs/raw_hash_compare_v3.csv
